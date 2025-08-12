@@ -1,0 +1,4 @@
+# Ignorar arquivos sensíveis e de configuração
+.env
+.env.local
+client-server-separacao.md
