@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:latest
+    container_name: zappy-kiwify-db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: zappykiwify
+      MARIADB_USER: zappyuser
+      MARIADB_PASSWORD: zappypass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  db_data:

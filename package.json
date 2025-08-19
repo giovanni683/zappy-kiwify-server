@@ -1,0 +1,39 @@
+{
+  "name": "zappy-kiwify-server",
+  "version": "1.0.0",
+  "description": "Este projeto é o backend (Express + Socket.IO) para o sistema de notificações Zappy Kiwify.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/server.js",
+    "dev": "ts-node src/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giovanni683/zappy-kiwify-server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/giovanni683/zappy-kiwify-server/issues"
+  },
+  "homepage": "https://github.com/giovanni683/zappy-kiwify-server#readme",
+  "dependencies": {
+    "@types/node": "^24.3.0",
+    "axios": "^1.11.0",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.3",
+    "socket.io": "^4.8.1",
+    "zdk": "^0.6.2"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.6",
+    "@types/express": "^5.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}

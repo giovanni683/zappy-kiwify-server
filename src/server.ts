@@ -22,6 +22,9 @@ notificationService.setSocketIo(io);
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
+
+import zappyRoutes from './routes/zappyRoutes';
+app.use('/api/zappy', zappyRoutes);
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/notifications', notificationRoutes);
 
