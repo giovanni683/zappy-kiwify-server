@@ -1,3 +1,41 @@
+## Eventos Suportados
+
+Os seguintes eventos podem ser usados para disparar notificações automáticas:
+
+- **Transacionais**
+   - boleto_gerado
+   - pix_gerado
+   - compra_aprovada
+   - compra_recusada
+- **Recuperação / Follow-Up**
+   - carrinho_abandonado
+   - subscription_late
+   - subscription_canceled
+- **Pós-venda / Suporte**
+   - compra_reembolsada
+   - chargeback
+   - subscription_renewed
+
+## Variáveis Dinâmicas
+
+As mensagens podem conter variáveis dinâmicas, que serão substituídas automaticamente:
+
+- nomeCompleto
+- primeiroNome
+- urlBoleto
+- codigoBarrasBoleto
+- dataExpiracaoBoleto
+- statusPagamento
+- codigoPix
+- dataExpiracaoPix
+
+## Exemplos de Mensagem
+
+```text
+Olá {{primeiroNome}}, seu boleto está disponível em {{urlBoleto}}.
+Olá {{primeiroNome}}, seu PIX foi gerado! Código: {{codigoPix}}.
+Parabéns {{primeiroNome}}, sua compra foi aprovada!
+```
 # Zappy Kiwify Server
 
 Este projeto é o backend (Express + Socket.IO) para o sistema de notificações Zappy Kiwify.
