@@ -2,3 +2,5 @@
 .env
 .env.local
 client-server-separacao.md
+
+/src/generated/prisma

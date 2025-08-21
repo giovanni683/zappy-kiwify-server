@@ -1,29 +1,54 @@
+import { Request, Response } from 'express';
+import { sendZenviaNotification } from '../services/zenviaService';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
 export async function handleKiwifyWebhook(req: Request, res: Response) {
+  const event = req.body;
+  // Validação básica dos dados do evento
+  if (!event || typeof event !== 'object') {
+    console.error('Webhook Kiwify: evento inválido');
+    return res.status(400).json({ error: 'Evento inválido.' });
+  }
+  if (!event.account_id || typeof event.account_id !== 'string') {
+    console.error('Webhook Kiwify: account_id inválido');
+    return res.status(400).json({ error: 'account_id é obrigatório e deve ser string.' });
+  }
+  if (!event.integration_id || typeof event.integration_id !== 'string') {
+    console.error('Webhook Kiwify: integration_id inválido');
+    return res.status(400).json({ error: 'integration_id é obrigatório e deve ser string.' });
+  }
   try {
-    const event = req.body;
-    // Exemplo: salvar evento no banco
-    await pool.query(
-      'INSERT INTO notification_rules (id, account_id, integration_id, active, event, message) VALUES (UUID(), ?, ?, TRUE, ?, ?)',
-      [event.account_id || 'default-account', event.integration_id || 'default-integration', event.event_code || 1, JSON.stringify(event)]
-    );
-    // Notificar integração (exemplo: via Zenvia)
+    await prisma.notificationRule.create({
+      data: {
+        accountId: event.account_id,
+        integrationId: event.integration_id,
+        active: true,
+        event: event.event_code || 1,
+        message: JSON.stringify(event)
+      }
+    });
     await sendZenviaNotification(event);
+    console.log(`Evento Kiwify registrado para account_id: ${event.account_id}`);
     res.status(200).json({ success: true });
   } catch (err: any) {
+    console.error('Erro ao processar webhook Kiwify:', err);
     res.status(500).json({ error: err.message });
   }
 }
 
-import { Request, Response } from 'express';
-import { sendZenviaNotification } from '../services/zenviaService';
-import { pool } from '../db';
-
 export async function handleWebhook(req: Request, res: Response) {
+  const notification = req.body;
+  if (!notification || typeof notification !== 'object') {
+    console.error('Webhook: notification inválida');
+    return res.status(400).json({ error: 'Notification inválida.' });
+  }
   try {
-    const notification = req.body;
     await sendZenviaNotification(notification);
+    console.log('Notificação processada via webhook.');
     res.status(200).json({ success: true });
   } catch (err: any) {
+    console.error('Erro ao processar webhook:', err);
     res.status(500).json({ error: err.message });
   }
 }

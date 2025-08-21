@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js",
+    "start": "node dist/server.js",
+    "build": "tsc",
     "dev": "ts-node src/server.ts"
   },
   "repository": {
@@ -20,6 +21,7 @@
   },
   "homepage": "https://github.com/giovanni683/zappy-kiwify-server#readme",
   "dependencies": {
+    "@prisma/client": "^6.14.0",
     "@types/node": "^24.3.0",
     "axios": "^1.11.0",
     "body-parser": "^2.2.0",
@@ -27,7 +29,9 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "mysql2": "^3.14.3",
+    "prisma": "^6.14.0",
     "socket.io": "^4.8.1",
+    "uuid": "^11.1.0",
     "zdk": "^0.6.2"
   },
   "devDependencies": {

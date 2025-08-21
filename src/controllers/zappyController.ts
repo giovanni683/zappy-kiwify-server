@@ -1,20 +1,28 @@
-import { pool } from '../db';
+import { PrismaClient } from '@prisma/client';
 import { Account, Integration, NotificationRule, IntegrationType } from '../models/zappyTypes';
 import { Request, Response } from 'express';
+const prisma = new PrismaClient();
 
 // Criar uma conta
 export async function createAccount(req: Request, res: Response) {
   const { name, status } = req.body;
+  // Validação dos dados
+  if (!name || typeof name !== 'string') {
+    console.error('Erro de validação: nome inválido');
+    return res.status(400).json({ error: 'Nome é obrigatório e deve ser string.' });
+  }
+  if (typeof status !== 'number' || (status !== 0 && status !== 1)) {
+    console.error('Erro de validação: status inválido');
+    return res.status(400).json({ error: 'Status deve ser 0 (inativa) ou 1 (ativa).' });
+  }
   try {
-    const [result] = await pool.query(
-      'INSERT INTO accounts (id, name, status) VALUES (UUID(), ?, ?)',
-      [name, status]
-    );
-    // Buscar o id gerado
-    const [rows]: any = await pool.query('SELECT id FROM accounts WHERE name = ? ORDER BY created_at DESC LIMIT 1', [name]);
-    const id = rows && rows.length > 0 ? rows[0].id : null;
-    res.status(201).json({ success: true, id });
+    const account = await prisma.account.create({
+      data: { name, status }
+    });
+    console.log(`Conta criada: ${account.id}`);
+    res.status(201).json({ success: true, id: account.id });
   } catch (err: any) {
+    console.error('Erro ao criar conta:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -22,9 +30,11 @@ export async function createAccount(req: Request, res: Response) {
 // Listar contas
 export async function listAccounts(req: Request, res: Response) {
   try {
-    const [rows] = await pool.query('SELECT * FROM accounts');
-    res.json(rows);
+    const accounts = await prisma.account.findMany();
+    console.log(`Listando contas: ${accounts.length} encontradas.`);
+    res.json(accounts);
   } catch (err: any) {
+    console.error('Erro ao listar contas:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -32,15 +42,26 @@ export async function listAccounts(req: Request, res: Response) {
 // Criar integração
 export async function createIntegration(req: Request, res: Response) {
   const { accountId, type, credentials } = req.body;
+  // Validação dos dados
+  if (!accountId || typeof accountId !== 'string') {
+    console.error('Erro de validação: accountId inválido');
+    return res.status(400).json({ error: 'accountId é obrigatório e deve ser string.' });
+  }
+  if (typeof type !== 'number' || (type !== 1 && type !== 2)) {
+    console.error('Erro de validação: type inválido');
+    return res.status(400).json({ error: 'type deve ser 1 (ZAPPY) ou 2 (KIWIFY).' });
+  }
+  if (!credentials || typeof credentials !== 'object') {
+    console.error('Erro de validação: credentials inválido');
+    return res.status(400).json({ error: 'credentials é obrigatório e deve ser objeto.' });
+  }
   try {
-    const [result] = await pool.query(
-      'INSERT INTO integrations (id, account_id, type, credentials) VALUES (UUID(), ?, ?, ?)',
-      [accountId, type, JSON.stringify(credentials)]
-    );
-    const [rows]: any = await pool.query('SELECT id FROM integrations WHERE account_id = ? AND type = ? ORDER BY created_at DESC LIMIT 1', [accountId, type]);
-    const id = rows && rows.length > 0 ? rows[0].id : null;
-    res.status(201).json({ success: true, id });
+    const integration = await prisma.integration.create({
+      data: { accountId, type, credentials }
+    });
+    res.status(201).json({ success: true, id: integration.id });
   } catch (err: any) {
+    console.error('Erro ao criar integração:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -48,9 +69,11 @@ export async function createIntegration(req: Request, res: Response) {
 // Listar integrações
 export async function listIntegrations(req: Request, res: Response) {
   try {
-    const [rows] = await pool.query('SELECT * FROM integrations');
-    res.json(rows);
+    const integrations = await prisma.integration.findMany();
+    console.log(`Listando integrações: ${integrations.length} encontradas.`);
+    res.json(integrations);
   } catch (err: any) {
+    console.error('Erro ao listar integrações:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -58,15 +81,38 @@ export async function listIntegrations(req: Request, res: Response) {
 // Criar regra de notificação
 export async function createNotificationRule(req: Request, res: Response) {
   const { integrationId, accountId, active, event, message, adjustments } = req.body;
+  // Validação dos dados
+  if (!integrationId || typeof integrationId !== 'string') {
+    console.error('Erro de validação: integrationId inválido');
+    return res.status(400).json({ error: 'integrationId é obrigatório e deve ser string.' });
+  }
+  if (!accountId || typeof accountId !== 'string') {
+    console.error('Erro de validação: accountId inválido');
+    return res.status(400).json({ error: 'accountId é obrigatório e deve ser string.' });
+  }
+  if (typeof active !== 'boolean') {
+    console.error('Erro de validação: active inválido');
+    return res.status(400).json({ error: 'active é obrigatório e deve ser boolean.' });
+  }
+  if (typeof event !== 'number') {
+    console.error('Erro de validação: event inválido');
+    return res.status(400).json({ error: 'event é obrigatório e deve ser number.' });
+  }
+  if (!message || typeof message !== 'string') {
+    console.error('Erro de validação: message inválido');
+    return res.status(400).json({ error: 'message é obrigatório e deve ser string.' });
+  }
+  if (adjustments && typeof adjustments !== 'object') {
+    console.error('Erro de validação: adjustments inválido');
+    return res.status(400).json({ error: 'adjustments deve ser objeto se fornecido.' });
+  }
   try {
-    const [result] = await pool.query(
-      'INSERT INTO notification_rules (id, integration_id, account_id, active, event, message, adjustments) VALUES (UUID(), ?, ?, ?, ?, ?, ?)',
-      [integrationId, accountId, active, event, message, adjustments ? JSON.stringify(adjustments) : null]
-    );
-    const [rows]: any = await pool.query('SELECT id FROM notification_rules WHERE integration_id = ? AND account_id = ? ORDER BY created_at DESC LIMIT 1', [integrationId, accountId]);
-    const id = rows && rows.length > 0 ? rows[0].id : null;
-    res.status(201).json({ success: true, id });
+    const notificationRule = await prisma.notificationRule.create({
+      data: { integrationId, accountId, active, event, message, adjustments }
+    });
+    res.status(201).json({ success: true, id: notificationRule.id });
   } catch (err: any) {
+    console.error('Erro ao criar regra de notificação:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -74,9 +120,11 @@ export async function createNotificationRule(req: Request, res: Response) {
 // Listar regras de notificação
 export async function listNotificationRules(req: Request, res: Response) {
   try {
-    const [rows] = await pool.query('SELECT * FROM notification_rules');
-    res.json(rows);
+    const notificationRules = await prisma.notificationRule.findMany();
+    console.log(`Listando regras de notificação: ${notificationRules.length} encontradas.`);
+    res.json(notificationRules);
   } catch (err: any) {
+    console.error('Erro ao listar regras de notificação:', err);
     res.status(500).json({ error: err.message });
   }
 }
