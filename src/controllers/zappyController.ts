@@ -108,7 +108,7 @@ export async function createNotificationRule(req: Request, res: Response) {
   }
   try {
     const notificationRule = await prisma.notificationRule.create({
-      data: { integrationId, accountId, active, event, message, adjustments }
+      data: { integrationId, accountId, active, event, message }
     });
     res.status(201).json({ success: true, id: notificationRule.id });
   } catch (err: any) {
@@ -117,7 +117,6 @@ export async function createNotificationRule(req: Request, res: Response) {
   }
 }
 
-// Listar regras de notificação
 export async function listNotificationRules(req: Request, res: Response) {
   try {
     const notificationRules = await prisma.notificationRule.findMany();

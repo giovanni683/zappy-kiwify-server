@@ -4,6 +4,7 @@ import http from 'http';
 import cors from 'cors';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import bodyParser from 'body-parser';
+import path from 'path';
 import webhookRoutes from './routes/webhookRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import * as notificationService from './services/notificationService';
@@ -23,11 +24,17 @@ notificationService.setSocketIo(io);
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
 
 import zappyRoutes from './routes/zappyRoutes';
 app.use('/api/zappy', zappyRoutes);
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/notifications', notificationRoutes);
+
+// Rota para servir a página de integração Kiwify
+app.get('/api/integration/kiwify-ui', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/kiwify.html'));
+});
 
 io.on('connection', (socket: Socket) => {
   console.log('Cliente conectado:', socket.id);
