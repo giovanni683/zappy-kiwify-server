@@ -1,5 +1,5 @@
 /**
- * @openapi
+ * @swagger
  * components:
  *   schemas:
  *     Account:
@@ -30,7 +30,8 @@
  *         id: "int_123"
  *         accountId: "acc_123"
  *         type: 1
- *         credentials: { "apiKey": "xyz" }
+ *         credentials:
+ *           apiKey: "xyz"
  *     NotificationRule:
  *       type: object
  *       properties:
@@ -55,7 +56,8 @@
  *         active: true
  *         event: 1
  *         message: "Your payment was approved."
- *         adjustments: { "discount": 10 }
+ *         adjustments:
+ *           discount: 10
  */
 import { Router } from 'express';
 import { getZappyCredentials } from '../services/zenviaService';
@@ -83,15 +85,24 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
+ *             $ref: '#/components/schemas/Account'
+ *           example:
+ *             id: "acc_123"
+ *             name: "John Doe"
+ *             status: 1
+ *             ZappyUrl: "https://api.zappy.chat"
  *     responses:
  *       201:
  *         description: Conta criada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Account'
+ *               example:
+ *                 id: "acc_123"
+ *                 name: "John Doe"
+ *                 status: 1
+ *                 ZappyUrl: "https://api.zappy.chat"
  */
 router.post('/accounts', createAccount);
 /**
@@ -120,19 +131,32 @@ router.get('/accounts', listAccounts);
  *     tags:
  *       - Integrations
  *     summary: Create a new Zappy/Kiwify integration
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token OAuth gerado via Kiwify
+ *       - in: header
+ *         name: x-kiwify-account-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da conta Kiwify
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               accountId:
- *                 type: string
- *               type:
- *                 type: integer
- *               credentials:
- *                 type: object
+ *             $ref: '#/components/schemas/Integration'
+ *           example:
+ *             id: "int_123"
+ *             accountId: "acc_123"
+ *             type: 1
+ *             credentials:
+ *               apiKey: "xyz"
+ *             ZappyUrl: "https://api.zappy.chat"
  *     responses:
  *       201:
  *         description: Integração criada com sucesso
@@ -140,6 +164,13 @@ router.get('/accounts', listAccounts);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Integration'
+ *               example:
+ *                 id: "int_123"
+ *                 accountId: "acc_123"
+ *                 type: 1
+ *                 credentials:
+ *                   apiKey: "xyz"
+ *                 ZappyUrl: "https://api.zappy.chat"
  */
 router.post('/integrations', createIntegration);
 /**
@@ -149,6 +180,19 @@ router.post('/integrations', createIntegration);
  *     tags:
  *       - Integrations
  *     summary: List all integrations
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token OAuth gerado via Kiwify
+ *       - in: header
+ *         name: x-kiwify-account-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da conta Kiwify
  *     responses:
  *       200:
  *         description: Lista de integrações
@@ -162,12 +206,35 @@ router.get('/integrations', listIntegrations);
  *     tags:
  *       - Notifications
  *     summary: Create a new notification rule
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token OAuth gerado via Kiwify
+ *       - in: header
+ *         name: x-kiwify-account-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da conta Kiwify
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
+ *             $ref: '#/components/schemas/NotificationRule'
+ *           example:
+ *             id: "rule_123"
+ *             integrationId: "int_123"
+ *             accountId: "acc_123"
+ *             active: true
+ *             event: 1
+ *             message: "Your payment was approved."
+ *             adjustments:
+ *               discount: 10
+ *             ZappyUrl: "https://api.zappy.chat"
  *     responses:
  *       201:
  *         description: Regra criada com sucesso
@@ -175,6 +242,16 @@ router.get('/integrations', listIntegrations);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotificationRule'
+ *               example:
+ *                 id: "rule_123"
+ *                 integrationId: "int_123"
+ *                 accountId: "acc_123"
+ *                 active: true
+ *                 event: 1
+ *                 message: "Your payment was approved."
+ *                 adjustments:
+ *                   discount: 10
+ *                 ZappyUrl: "https://api.zappy.chat"
  */
 router.post('/notification-rules', createNotificationRule);
 /**
@@ -184,6 +261,19 @@ router.post('/notification-rules', createNotificationRule);
  *     tags:
  *       - NotificationRules
  *     summary: List all notification rules
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token OAuth gerado via Kiwify
+ *       - in: header
+ *         name: x-kiwify-account-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da conta Kiwify
  *     responses:
  *       200:
  *         description: Lista de regras
@@ -207,6 +297,16 @@ router.get('/notification-rules', listNotificationRules);
  *     responses:
  *       200:
  *         description: Lista de conexões
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   ZappyUrl:
+ *                     type: string
+ *                     description: Zappy platform URL
  */
 router.get('/connections', async (req, res) => {
   try {
@@ -244,6 +344,16 @@ router.get('/connections', async (req, res) => {
  *     responses:
  *       200:
  *         description: Lista de setores
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   ZappyUrl:
+ *                     type: string
+ *                     description: Zappy platform URL
  */
 router.get('/queues', async (req, res) => {
   try {

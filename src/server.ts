@@ -8,6 +8,10 @@ import path from 'path';
 import webhookRoutes from './routes/webhookRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import * as notificationService from './services/notificationService';
+import logRoutes from './routes/logRoutes';
+import healthRoutes from './routes/healthRoutes';
+import statsRoutes from './routes/statsRoutes';
+import settingsRoutes from './routes/settingsRoutes';
 
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
@@ -56,6 +60,10 @@ import zappyRoutes from './routes/zappyRoutes';
 app.use('/api/zappy', zappyRoutes);
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/zappy', logRoutes);
+app.use('/api/zappy', healthRoutes);
+app.use('/api/zappy', statsRoutes);
+app.use('/api/zappy', settingsRoutes);
 
 // Rota para servir a página de integração Kiwify
 app.get('/api/integration/kiwify-ui', (req, res) => {

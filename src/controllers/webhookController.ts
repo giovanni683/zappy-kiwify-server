@@ -4,6 +4,15 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function handleKiwifyWebhook(req: Request, res: Response) {
+  // Validação dos headers obrigatórios
+  const authHeader = req.headers['authorization'];
+  const accountHeader = req.headers['x-kiwify-account-id'];
+  if (!authHeader || typeof authHeader !== 'string') {
+    return res.status(401).json({ error: 'Authorization header (Bearer token) obrigatório.' });
+  }
+  if (!accountHeader || typeof accountHeader !== 'string') {
+    return res.status(401).json({ error: 'x-kiwify-account-id header obrigatório.' });
+  }
   const event = req.body;
   // Validação básica dos dados do evento
   if (!event || typeof event !== 'object') {

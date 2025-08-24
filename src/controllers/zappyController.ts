@@ -41,6 +41,15 @@ export async function listAccounts(req: Request, res: Response) {
 
 // Criar integração
 export async function createIntegration(req: Request, res: Response) {
+  // Validação dos headers obrigatórios
+  const authHeader = req.headers['authorization'];
+  const accountHeader = req.headers['x-kiwify-account-id'];
+  if (!authHeader || typeof authHeader !== 'string') {
+    return res.status(401).json({ error: 'Authorization header (Bearer token) obrigatório.' });
+  }
+  if (!accountHeader || typeof accountHeader !== 'string') {
+    return res.status(401).json({ error: 'x-kiwify-account-id header obrigatório.' });
+  }
   const { accountId, type, credentials } = req.body;
   // Validação dos dados
   if (!accountId || typeof accountId !== 'string') {
@@ -68,6 +77,15 @@ export async function createIntegration(req: Request, res: Response) {
 
 // Listar integrações
 export async function listIntegrations(req: Request, res: Response) {
+  // Validação dos headers obrigatórios
+  const authHeader = req.headers['authorization'];
+  const accountHeader = req.headers['x-kiwify-account-id'];
+  if (!authHeader || typeof authHeader !== 'string') {
+    return res.status(401).json({ error: 'Authorization header (Bearer token) obrigatório.' });
+  }
+  if (!accountHeader || typeof accountHeader !== 'string') {
+    return res.status(401).json({ error: 'x-kiwify-account-id header obrigatório.' });
+  }
   try {
     const integrations = await prisma.integration.findMany();
     console.log(`Listando integrações: ${integrations.length} encontradas.`);
@@ -80,6 +98,15 @@ export async function listIntegrations(req: Request, res: Response) {
 
 // Criar regra de notificação
 export async function createNotificationRule(req: Request, res: Response) {
+  // Validação dos headers obrigatórios
+  const authHeader = req.headers['authorization'];
+  const accountHeader = req.headers['x-kiwify-account-id'];
+  if (!authHeader || typeof authHeader !== 'string') {
+    return res.status(401).json({ error: 'Authorization header (Bearer token) obrigatório.' });
+  }
+  if (!accountHeader || typeof accountHeader !== 'string') {
+    return res.status(401).json({ error: 'x-kiwify-account-id header obrigatório.' });
+  }
   const { integrationId, accountId, active, event, message, adjustments } = req.body;
   // Validação dos dados
   if (!integrationId || typeof integrationId !== 'string') {
@@ -118,6 +145,15 @@ export async function createNotificationRule(req: Request, res: Response) {
 }
 
 export async function listNotificationRules(req: Request, res: Response) {
+  // Validação dos headers obrigatórios
+  const authHeader = req.headers['authorization'];
+  const accountHeader = req.headers['x-kiwify-account-id'];
+  if (!authHeader || typeof authHeader !== 'string') {
+    return res.status(401).json({ error: 'Authorization header (Bearer token) obrigatório.' });
+  }
+  if (!accountHeader || typeof accountHeader !== 'string') {
+    return res.status(401).json({ error: 'x-kiwify-account-id header obrigatório.' });
+  }
   try {
     const notificationRules = await prisma.notificationRule.findMany();
     console.log(`Listando regras de notificação: ${notificationRules.length} encontradas.`);
