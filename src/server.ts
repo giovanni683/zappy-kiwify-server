@@ -9,6 +9,9 @@ import webhookRoutes from './routes/webhookRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import * as notificationService from './services/notificationService';
 
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+
 const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
@@ -25,6 +28,29 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
+
+// Swagger setup
+const swaggerSpec = swaggerJsdoc({
+  definition: {
+    openapi: '3.0.0',
+    info: { title: 'API Zappy', version: '1.0.0' },
+  },
+  apis: ['./src/routes/*.ts'],
+});
+
+// Rota para servir o JSON puro do Swagger (deve vir antes do Swagger UI)
+app.get('/api-docs/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Rota para servir o JSON puro do Swagger
+app.get('/api-docs/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 import zappyRoutes from './routes/zappyRoutes';
 app.use('/api/zappy', zappyRoutes);

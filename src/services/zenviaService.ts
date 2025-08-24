@@ -1,3 +1,25 @@
+// Função utilitária para obter credenciais Zappy
+export async function getZappyCredentials(accountId?: string) {
+  let zappyUrl = process.env.ZAPPY_URL;
+  let zappyToken = process.env.ZAPPY_TOKEN;
+  if (accountId) {
+    try {
+      const { pool } = require('../db');
+      const [rows] = await pool.query(
+        'SELECT credentials FROM integrations WHERE accountId = ? AND type = 1 LIMIT 1',
+        [accountId]
+      );
+      if (rows && rows.length > 0) {
+        const creds = typeof rows[0].credentials === 'string' ? JSON.parse(rows[0].credentials) : rows[0].credentials;
+        zappyUrl = creds.url || zappyUrl;
+        zappyToken = creds.token || zappyToken;
+      }
+    } catch (e) {
+      console.error('Erro ao buscar credenciais Zappy:', e);
+    }
+  }
+  return { url: zappyUrl, token: zappyToken };
+}
 import { interpolateMessage } from '../utils/interpolateMessage';
 import { DynamicVariables } from '../models/zappyTypes';
 import { Zdk } from 'zdk';
