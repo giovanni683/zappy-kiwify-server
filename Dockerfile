@@ -1,10 +1,10 @@
-# Dockerfile para o server Express
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
-COPY package*.json ./
+COPY --chown=node:node package*.json ./
 RUN npm install
-COPY . .
+COPY --chown=node:node . .
 RUN npx prisma generate
 RUN npm run build
-EXPOSE 3001
-CMD ["npm", "start"]
+USER node
+EXPOSE 3001/tcp
+CMD [ "npm", "start" ]

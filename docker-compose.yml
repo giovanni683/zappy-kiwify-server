@@ -1,33 +1,19 @@
-version: '3.8'
 services:
-  mariadb:
-    image: mariadb:latest
-    restart: always
-    environment:
-      MARIADB_ROOT_PASSWORD: rootpass
-      MARIADB_DATABASE: zappydb
-      MARIADB_USER: zappyuser
-      MARIADB_PASSWORD: zappypass
+  mysql:
+    image: mariadb:11
+    container_name: kiwify-server-database
     ports:
-      - "3306:3306"
+      - "33067:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DATABASE_NAME}
     volumes:
-      - mariadb_data:/var/lib/mysql
-
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    environment:
-      DB_HOST: mariadb
-      DB_PORT: 3306
-      DB_USER: zappyuser
-      DB_PASSWORD: zappypass
-      DB_NAME: zappydb
-    ports:
-      - "3001:3001"
-    depends_on:
-      - mariadb
-
+      - db_data:/var/lib/mysql
+    networks:
+      - app-net
+  
 volumes:
-  mariadb_data:
+  db_data:
+networks:
+  app-net:
+    driver: bridge

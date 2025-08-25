@@ -1,6 +1,6 @@
 export enum IntegrationType {
   ZAPPY = 1,
-  KIWIFY = 2
+  KIWIFY = 1
 }
 
 export interface Account {
@@ -13,7 +13,7 @@ export interface Integration {
   id: string; // uuid
   accountId: string; // uuid
   type: IntegrationType;
-  credentials: any; // JSON
+  credential: any; // JSON
 }
 
 export interface NotificationRule {
