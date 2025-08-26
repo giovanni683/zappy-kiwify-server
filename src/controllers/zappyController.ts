@@ -1,9 +1,9 @@
-// import { pool } from '../db';
+
 import { Account, Integration, NotificationRule, IntegrationType } from '../models/zappyTypes';
 import { validateDynamicVariables } from '../utils/interpolateMessage';
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
-import { v7 as uuidv7 } from 'uuidv7';
+import { uuidv7 } from 'uuidv7';
 
 // Criar uma conta
 export async function createAccount(req: Request, res: Response) {
