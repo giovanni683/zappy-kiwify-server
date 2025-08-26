@@ -38,8 +38,7 @@ Parabéns {{primeiroNome}}, sua compra foi aprovada!
 ```
 # Zappy Kiwify Server
 
-Este projeto é o backend (Express + Socket.IO) para o sistema de notificações Zappy Kiwify.
-Este projeto é o backend (Express + Prisma) para o sistema de notificações Zappy Kiwify.
+Este projeto é o backend (Express + Socket.IO + Prisma) para o sistema de notificações Zappy Kiwify.
 Todos os controllers e modelos usam Prisma para acesso seguro ao banco (sem pool.query).
 Os IDs das entidades principais (Account, Integration, NotificationRule) são gerados como UUID v7.
 Os endpoints REST aceitam e retornam dados em JSON, com tipagem correta dos campos (ex: event aceita number ou string).
