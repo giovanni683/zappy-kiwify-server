@@ -11,8 +11,11 @@ import { uuidv7 } from 'uuidv7';
  */
 export async function createNotificationRuleController(req: Request, res: Response) {
   const { integrationId, accountId, active, event, message, adjustments } = req.body;
-  if (!integrationId || !accountId || typeof active !== 'boolean' || event === undefined || !message) {
-    return res.status(400).json({ error: 'Campos obrigatórios ausentes: integrationId, accountId, active, event, message.' });
+  if (!integrationId || String(integrationId).trim() === '' ||
+      !accountId || String(accountId).trim() === '' ||
+      typeof active !== 'boolean' || event === undefined ||
+      !message || String(message).trim() === '') {
+    return res.status(400).json({ error: 'Campos obrigatórios ausentes ou vazios: integrationId, accountId, active, event, message.' });
   }
   try {
     const id = uuidv7();

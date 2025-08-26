@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma';
 
 export async function getNotificationRules(status?: "active" | "inactive") {
   if (status === "active") {

@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/prisma';
 import { uuidv7 } from 'uuidv7';
-const prisma = new PrismaClient();
 
 
 export async function listIntegrations(req: Request, res: Response) {
@@ -22,8 +21,10 @@ export async function listIntegrations(req: Request, res: Response) {
 
 export async function createIntegration(req: Request, res: Response) {
   const { accountId, type, credentials } = req.body;
-  if (!accountId || !type || !credentials) {
-    return res.status(400).json({ error: 'Os campos accountId, type e credentials são obrigatórios.' });
+  if (!accountId || String(accountId).trim() === '' || !type || String(type).trim() === '' || !credentials ||
+      !credentials.client_id || String(credentials.client_id).trim() === '' ||
+      !credentials.client_secret || String(credentials.client_secret).trim() === '') {
+    return res.status(400).json({ error: 'Os campos accountId, type, credentials.client_id e credentials.client_secret são obrigatórios e não podem ser vazios.' });
   }
   try {
     const id = uuidv7();

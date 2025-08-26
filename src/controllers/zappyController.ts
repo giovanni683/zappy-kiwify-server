@@ -7,9 +7,9 @@ import { uuidv7 } from 'uuidv7';
 
 // Criar uma conta
 export async function createAccount(req: Request, res: Response) {
-  const { name, status } = req.body;
-  if (!name || typeof status !== 'number') {
-    return res.status(400).json({ error: 'Campos obrigatórios ausentes: name (string), status (number).' });
+  const { name, status, ZappyUrl } = req.body;
+  if (!name || typeof status !== 'number' || String(name).trim() === '' || !ZappyUrl || String(ZappyUrl).trim() === '') {
+    return res.status(400).json({ error: 'Campos obrigatórios ausentes ou vazios: name (string), status (number), ZappyUrl.' });
   }
   try {
     const id = uuidv7();
@@ -37,8 +37,9 @@ export async function listAccounts(req: Request, res: Response) {
 export async function createIntegration(req: Request, res: Response) {
   const { accountId, type, credentials, zappyToken, zappyUrl } = req.body;
   // Validação dos campos obrigatórios
-  if (!accountId || typeof type !== 'number' || !credentials || !credentials.client_id || !credentials.client_secret || !zappyToken || !zappyUrl) {
-    return res.status(400).json({ error: 'Campos obrigatórios ausentes: accountId, type, credentials (client_id, client_secret), zappyToken, zappyUrl.' });
+  if (!accountId || typeof type !== 'number' || !credentials || !credentials.client_id || !credentials.client_secret || !zappyToken || !zappyUrl ||
+      String(accountId).trim() === '' || String(credentials.client_id).trim() === '' || String(credentials.client_secret).trim() === '' || String(zappyToken).trim() === '' || String(zappyUrl).trim() === '') {
+    return res.status(400).json({ error: 'Campos obrigatórios ausentes ou vazios: accountId, type, credentials (client_id, client_secret), zappyToken, zappyUrl.' });
   }
   // Verifica se o accountId existe
   const account = await prisma.account.findUnique({ where: { id: accountId } });
@@ -81,8 +82,9 @@ export async function listIntegrations(req: Request, res: Response) {
 // Criar regra de notificação
 export async function createNotificationRule(req: Request, res: Response) {
   const { integrationId, accountId, active, event, message, adjustments } = req.body;
-  if (!integrationId || !accountId || typeof active !== 'boolean' || typeof event !== 'number' || !message) {
-    return res.status(400).json({ error: 'Campos obrigatórios ausentes: integrationId (string), accountId (string), active (boolean), event (number), message (string).' });
+  if (!integrationId || !accountId || typeof active !== 'boolean' || typeof event !== 'number' || !message ||
+      String(integrationId).trim() === '' || String(accountId).trim() === '' || String(message).trim() === '') {
+    return res.status(400).json({ error: 'Campos obrigatórios ausentes ou vazios: integrationId (string), accountId (string), active (boolean), event (number), message (string).' });
   }
   // Validação dos placeholders da mensagem
   const invalidVars = validateDynamicVariables(message);

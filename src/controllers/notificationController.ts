@@ -3,11 +3,11 @@ import { sendNotification } from '../services/notificationService';
 
 export async function sendNotificationController(req: Request, res: Response) {
   const { title, message } = req.body;
-  if (!title || typeof title !== 'string') {
-    return res.status(400).json({ error: 'O campo title é obrigatório e deve ser string.' });
+  if (!title || typeof title !== 'string' || title.trim() === '') {
+    return res.status(400).json({ error: 'O campo title é obrigatório, deve ser string e não pode ser vazio.' });
   }
-  if (!message || typeof message !== 'string') {
-    return res.status(400).json({ error: 'O campo message é obrigatório e deve ser string.' });
+  if (!message || typeof message !== 'string' || message.trim() === '') {
+    return res.status(400).json({ error: 'O campo message é obrigatório, deve ser string e não pode ser vazio.' });
   }
   try {
     await sendNotification({ title, message });

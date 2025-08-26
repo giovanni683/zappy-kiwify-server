@@ -1,6 +1,6 @@
 // Retorna as credenciais (url e token) da Zappy para um accountId
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma';
+import { ChannelKey } from '../models/channelKey';
 
 export async function getZappyCredentials(accountId?: string): Promise<{ url: string, token: string }> {
   if (accountId) {
@@ -8,7 +8,7 @@ export async function getZappyCredentials(accountId?: string): Promise<{ url: st
     const integration = await prisma.integration.findFirst({
       where: {
         accountId,
-        type: 1 // Supondo que type 1 é Zappy
+        type: ChannelKey.ZAPPY // agora usando enum
       }
     });
     if (integration && integration.credentials) {

@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import { sendZenviaNotification } from '../services/zenviaService';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/prisma';
 import { uuidv7 } from 'uuidv7';
-const prisma = new PrismaClient();
 
 export async function handleKiwifyWebhook(req: Request, res: Response) {
   // Validação dos headers obrigatórios
@@ -20,13 +19,13 @@ export async function handleKiwifyWebhook(req: Request, res: Response) {
     console.error('Webhook Kiwify: evento inválido');
     return res.status(400).json({ error: 'Evento inválido.' });
   }
-  if (!event.account_id || typeof event.account_id !== 'string') {
+  if (!event.account_id || typeof event.account_id !== 'string' || event.account_id.trim() === '') {
     console.error('Webhook Kiwify: account_id inválido');
-    return res.status(400).json({ error: 'account_id é obrigatório e deve ser string.' });
+    return res.status(400).json({ error: 'account_id é obrigatório, deve ser string e não pode ser vazio.' });
   }
-  if (!event.integration_id || typeof event.integration_id !== 'string') {
+  if (!event.integration_id || typeof event.integration_id !== 'string' || event.integration_id.trim() === '') {
     console.error('Webhook Kiwify: integration_id inválido');
-    return res.status(400).json({ error: 'integration_id é obrigatório e deve ser string.' });
+    return res.status(400).json({ error: 'integration_id é obrigatório, deve ser string e não pode ser vazio.' });
   }
   try {
     const id = uuidv7();
