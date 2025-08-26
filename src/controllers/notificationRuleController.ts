@@ -5,30 +5,23 @@ import {
   createNotificationRule,
   deleteNotificationRule
 } from '../models/notificationRuleModel';
-
+import { uuidv7 } from 'uuidv7';
 /**
- * @swagger
- * /api/zappy/notification-rules:
- *   get:
- *     summary: Get notification rules (all, active, or inactive)
- *     tags: [NotificationRules]
- *     parameters:
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [active, inactive]
- *         description: Filter by rule status
- *     responses:
- *       200:
- *         description: List of notification rules
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/NotificationRule'
+ * Criação de regra de notificação com UUID v7
  */
+export async function createNotificationRuleController(req: Request, res: Response) {
+  const { integrationId, accountId, active, event, message, adjustments } = req.body;
+  if (!integrationId || !accountId || typeof active !== 'boolean' || event === undefined || !message) {
+    return res.status(400).json({ error: 'Campos obrigatórios ausentes: integrationId, accountId, active, event, message.' });
+  }
+  try {
+    const id = uuidv7();
+    const rule = await createNotificationRule({ id, integrationId, accountId, active, event: Number(event), message, adjustments });
+    res.status(201).json({ success: true, rule });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+}
 export async function getNotificationRulesController(req: Request, res: Response) {
   try {
     const { status } = req.query;
@@ -42,44 +35,7 @@ export async function getNotificationRulesController(req: Request, res: Response
   }
 }
 
-/**
- * @swagger
- * /api/zappy/notification-rules/{id}/status:
- *   put:
- *     summary: Update notification rule status
- *     tags: [NotificationRules]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Notification rule ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               active:
- *                 type: boolean
- *             required:
- *               - active
- *           example:
- *             active: true
- *     responses:
- *       200:
- *         description: Status updated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/NotificationRule'
- *       400:
- *         description: Invalid input
- *       404:
- *         description: Rule not found
- */
+
 export async function updateNotificationRuleStatusController(req: Request, res: Response) {
   const { id } = req.params;
   const { active } = req.body;

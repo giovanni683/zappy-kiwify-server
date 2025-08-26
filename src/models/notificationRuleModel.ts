@@ -11,7 +11,7 @@ export async function getNotificationRules(status?: "active" | "inactive") {
   return prisma.notificationRule.findMany();
 }
 
-export async function createNotificationRule(data: { integrationId: string; accountId: string; active: boolean; event: string; message: string; adjustments: object }) {
+export async function createNotificationRule(data: { id?: string; integrationId: string; accountId: string; active: boolean; event: number | string; message: string; adjustments: object }) {
   return prisma.notificationRule.create({ data: { ...data, event: Number(data.event) } });
 }
 

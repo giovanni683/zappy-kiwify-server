@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import uuidv7 from 'uuidv7';
 const prisma = new PrismaClient();
 
 /**
@@ -94,8 +95,10 @@ export async function createIntegration(req: Request, res: Response) {
     return res.status(400).json({ error: 'Os campos accountId, type e credentials são obrigatórios.' });
   }
   try {
+    const id = uuidv7();
     const integration = await prisma.integration.create({
       data: {
+        id,
         accountId,
         type: Number(type),
         credentials

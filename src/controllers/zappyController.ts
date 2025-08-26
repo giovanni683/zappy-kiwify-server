@@ -1,7 +1,9 @@
-import { pool } from '../db';
+// import { pool } from '../db';
 import { Account, Integration, NotificationRule, IntegrationType } from '../models/zappyTypes';
 import { validateDynamicVariables } from '../utils/interpolateMessage';
 import { Request, Response } from 'express';
+import { prisma } from '../config/prisma';
+import { v7 as uuidv7 } from 'uuidv7';
 
 // Criar uma conta
 export async function createAccount(req: Request, res: Response) {
@@ -10,13 +12,11 @@ export async function createAccount(req: Request, res: Response) {
     return res.status(400).json({ error: 'Campos obrigatórios ausentes: name (string), status (number).' });
   }
   try {
-    const [result] = await pool.query(
-      'INSERT INTO Account (id, name, status) VALUES (UUID(), ?, ?)',
-      [name, status]
-    );
-    // Retorna o id gerado para uso em integrações
-    const [rows]: any = await pool.query('SELECT id FROM Account WHERE name = ? ORDER BY createdAt DESC LIMIT 1', [name]);
-    res.status(201).json({ success: true, id: rows[0]?.id, result });
+    const id = uuidv7();
+    const result = await prisma.account.create({
+      data: { id, name, status }
+    });
+    res.status(201).json({ success: true, id: result.id, result });
   } catch (err: any) {
     console.error('Erro ao criar conta:', err);
     res.status(500).json({ error: err.message });
@@ -26,8 +26,8 @@ export async function createAccount(req: Request, res: Response) {
 // Listar contas
 export async function listAccounts(req: Request, res: Response) {
   try {
-    const [rows]: any = await pool.query('SELECT * FROM Account');
-    res.json(rows);
+    const accounts = await prisma.account.findMany();
+    res.json(accounts);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -41,21 +41,26 @@ export async function createIntegration(req: Request, res: Response) {
     return res.status(400).json({ error: 'Campos obrigatórios ausentes: accountId, type, credentials (client_id, client_secret), zappyToken, zappyUrl.' });
   }
   // Verifica se o accountId existe
-  const [accounts]: any = await pool.query('SELECT id FROM Account WHERE id = ?', [accountId]);
-  if (!accounts.length) {
+  const account = await prisma.account.findUnique({ where: { id: accountId } });
+  if (!account) {
     return res.status(404).json({ error: 'accountId não encontrado. Crie a conta antes de integrar.' });
   }
   try {
+    const id = uuidv7();
     // Salva todos os dados no campo credentials (incluindo zappyToken e zappyUrl)
     const fullCredentials = {
       ...credentials,
       zappyToken,
       zappyUrl
     };
-    const [result] = await pool.query(
-      'INSERT INTO Integration (id, accountId, type, credentials) VALUES (UUID(), ?, ?, ?)',
-      [accountId, type, JSON.stringify(fullCredentials)]
-    );
+    const result = await prisma.integration.create({
+      data: {
+        id,
+        accountId,
+        type,
+        credentials: fullCredentials
+      }
+    });
     res.status(201).json({ success: true, result });
   } catch (err: any) {
     console.error('Erro ao criar integração:', err);
@@ -66,8 +71,8 @@ export async function createIntegration(req: Request, res: Response) {
 // Listar integrações
 export async function listIntegrations(req: Request, res: Response) {
   try {
-    const [rows]: any = await pool.query('SELECT * FROM Integration');
-    res.json(rows);
+    const integrations = await prisma.integration.findMany();
+    res.json(integrations);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -88,10 +93,18 @@ export async function createNotificationRule(req: Request, res: Response) {
     });
   }
   try {
-    const [result] = await pool.query(
-      'INSERT INTO NotificationRule (id, integrationId, accountId, active, event, message, adjustments) VALUES (UUID(), ?, ?, ?, ?, ?, ?)',
-      [integrationId, accountId, active, event, message, adjustments ? JSON.stringify(adjustments) : null]
-    );
+    const id = uuidv7();
+    const result = await prisma.notificationRule.create({
+      data: {
+        id,
+        integrationId,
+        accountId,
+        active,
+        event,
+        message,
+        adjustments: adjustments || null
+      }
+    });
     res.status(201).json({ success: true, result });
   } catch (err: any) {
     console.error('Erro ao criar regra de notificação:', err);
@@ -102,8 +115,8 @@ export async function createNotificationRule(req: Request, res: Response) {
 // Listar regras de notificação
 export async function listNotificationRules(req: Request, res: Response) {
   try {
-    const [rows]: any = await pool.query('SELECT * FROM NotificationRule');
-    res.json(rows);
+    const rules = await prisma.notificationRule.findMany();
+    res.json(rules);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -30,6 +30,7 @@
     "mysql2": "^3.14.3",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0",
+    "uuidv7": "^1.0.2",
     "zdk": "^0.6.2"
   },
   "devDependencies": {

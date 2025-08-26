@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { sendZenviaNotification } from '../services/zenviaService';
 import { PrismaClient } from '@prisma/client';
+import uuidv7 from 'uuidv7';
 const prisma = new PrismaClient();
 
 export async function handleKiwifyWebhook(req: Request, res: Response) {
@@ -28,8 +29,10 @@ export async function handleKiwifyWebhook(req: Request, res: Response) {
     return res.status(400).json({ error: 'integration_id é obrigatório e deve ser string.' });
   }
   try {
+    const id = uuidv7();
     await prisma.notificationRule.create({
       data: {
+        id,
         accountId: event.account_id,
         integrationId: event.integration_id,
         active: true,
