@@ -39,6 +39,11 @@ Parabéns {{primeiroNome}}, sua compra foi aprovada!
 # Zappy Kiwify Server
 
 Este projeto é o backend (Express + Socket.IO) para o sistema de notificações Zappy Kiwify.
+Este projeto é o backend (Express + Prisma) para o sistema de notificações Zappy Kiwify.
+Todos os controllers e modelos usam Prisma para acesso seguro ao banco (sem pool.query).
+Os IDs das entidades principais (Account, Integration, NotificationRule) são gerados como UUID v7.
+Os endpoints REST aceitam e retornam dados em JSON, com tipagem correta dos campos (ex: event aceita number ou string).
+O frontend deve consumir os endpoints usando os IDs retornados e enviar os campos obrigatórios conforme exemplos abaixo.
 
 ## Como rodar
 
@@ -58,6 +63,50 @@ Este projeto é o backend (Express + Socket.IO) para o sistema de notificações
    ```sh
    npm start
    ```
+## Endpoints principais
+
+- `POST /api/zappy/accounts` — Cria uma conta
+- `POST /api/zappy/integrations` — Cria uma integração
+- `POST /api/zappy/notification-rules` — Cria uma regra de notificação
+- `GET /api/zappy/notification-rules` — Lista regras de notificação
+
+## Exemplo de payload para criação
+
+### Conta
+```json
+{
+  "name": "Conta Teste",
+  "status": 1
+}
+```
+
+### Integração
+```json
+{
+  "accountId": "<id da conta>",
+  "type": 1,
+  "credentials": { "client_id": "abc", "client_secret": "xyz" },
+  "zappyToken": "token",
+  "zappyUrl": "https://api.zappy.chat"
+}
+```
+
+### Regra de notificação
+```json
+{
+  "integrationId": "<id da integração>",
+  "accountId": "<id da conta>",
+  "active": true,
+  "event": 1,
+  "message": "Mensagem de teste",
+  "adjustments": {}
+}
+```
+
+## Observações
+- IDs são UUID v7 (alfanuméricos e longos).
+- Campos obrigatórios devem ser enviados conforme exemplos.
+- O frontend deve tratar os retornos e erros do backend.
 
 ## Docker
 
