@@ -6,7 +6,11 @@ export function validateDynamicVariables(template: string): string[] {
   const validKeys = [
     'nomeCompleto', 'primeiroNome',
     'urlBoleto', 'codigoBarrasBoleto', 'dataExpiracaoBoleto',
-    'statusPagamento', 'codigoPix', 'dataExpiracaoPix'
+    'statusPagamento', 'codigoPix', 'dataExpiracaoPix',
+    // Adicione aqui novas variáveis se necessário
+    'checkoutLink', 'email', 'telefone', 'nomeProduto', 'idProduto', 'statusCarrinho', 'pais', 'cnpj', 'dataCriacao', 'lojaId',
+    'motivoRecusa', 'metodoPagamento', 'tipoCartao', 'ultimosDigitosCartao', 'valorPedido', 'dataAprovacao', 'cpf', 'planoAssinatura', 'urlAcesso',
+    'dataReembolso', 'statusAssinatura', 'dataProximaCobranca'
   ];
   const matches = template.match(/{{(\w+)}}/g) || [];
   const invalids: string[] = [];
@@ -18,16 +22,13 @@ export function validateDynamicVariables(template: string): string[] {
   });
   return invalids;
 }
-// Utilitário para interpolar variáveis dinâmicas em templates de mensagem
-import { DynamicVariables } from '../models/zappyTypes';
-
 /**
  * Substitui os placeholders do template pelas variáveis fornecidas.
  * Exemplo: "Olá {{primeiroNome}}" => "Olá João"
  */
-export function interpolateMessage(template: string, variables: DynamicVariables): string {
+export function interpolateMessage(template: string, variables: Record<string, any>): string {
   return template.replace(/{{(\w+)}}/g, (match, key) => {
-    const value = variables[key as keyof DynamicVariables];
+    const value = variables[key];
     return value !== undefined ? String(value) : match;
   });
 }

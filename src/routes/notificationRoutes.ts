@@ -4,7 +4,7 @@ import { sendNotificationController } from '../controllers/notificationControlle
 import {
   getNotificationRulesController,
   updateNotificationRuleStatusController
-} from '../controllers/notificationRuleController';
+} from '../controllers/notificationController';
 import { createIntegration, listIntegrations } from '../controllers/integrationController';
 
 const router = Router();

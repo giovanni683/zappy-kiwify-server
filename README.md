@@ -28,6 +28,28 @@ As mensagens podem conter variáveis dinâmicas, que serão substituídas automa
 - statusPagamento
 - codigoPix
 - dataExpiracaoPix
+- checkoutLink
+- email
+- telefone
+- nomeProduto
+- idProduto
+- statusCarrinho
+- pais
+- cnpj
+- dataCriacao
+- lojaId
+- motivoRecusa
+- metodoPagamento
+- tipoCartao
+- ultimosDigitosCartao
+- valorPedido
+- dataAprovacao
+- cpf
+- planoAssinatura
+- urlAcesso
+- dataReembolso
+- statusAssinatura
+- dataProximaCobranca
 
 ## Exemplos de Mensagem
 
@@ -35,11 +57,11 @@ As mensagens podem conter variáveis dinâmicas, que serão substituídas automa
 Olá {{primeiroNome}}, seu boleto está disponível em {{urlBoleto}}.
 Olá {{primeiroNome}}, seu PIX foi gerado! Código: {{codigoPix}}.
 Parabéns {{primeiroNome}}, sua compra foi aprovada!
+Seu pedido {{idPedido}} foi reembolsado em {{dataReembolso}}.
 ```
 # Zappy Kiwify Server
 
-Este projeto é o backend (Express + Socket.IO) para o sistema de notificações Zappy Kiwify.
-Este projeto é o backend (Express + Prisma) para o sistema de notificações Zappy Kiwify.
+Este projeto é o backend (Express + Socket.IO + Prisma) para o sistema de notificações Zappy Kiwify.
 Todos os controllers e modelos usam Prisma para acesso seguro ao banco (sem pool.query).
 Os IDs das entidades principais (Account, Integration, NotificationRule) são gerados como UUID v7.
 Os endpoints REST aceitam e retornam dados em JSON, com tipagem correta dos campos (ex: event aceita number ou string).

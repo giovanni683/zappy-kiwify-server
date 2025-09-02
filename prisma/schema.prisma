@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,18 +8,19 @@ datasource db {
 }
 
 model Account {
-  id        String   @id @default(uuid())
-  name      String
-  status    Int
-  createdAt DateTime @default(now())
-  integrations Integration[]
-  notificationRules NotificationRule[]
+id           String   @id @default(uuid())
+name         String
+status       Int
+credentials  Json
+createdAt    DateTime @default(now())
+integrations Integration[]
+notificationRules NotificationRule[]
 }
 
 model Integration {
   id          String   @id @default(uuid())
   accountId   String
-  type        Int
+  type        String
   credentials Json
   account     Account  @relation(fields: [accountId], references: [id])
   notificationRules NotificationRule[]
@@ -28,13 +28,15 @@ model Integration {
 
 model NotificationRule {
   id            String   @id @default(uuid())
-  accountId     String
   integrationId String
-  active        Boolean
+  accountId     String
+  active        Boolean  @default(true)
   event         Int
-  message       String   @db.Text
+  message       String
   adjustments   Json?
+  variables     Json      
   account       Account     @relation(fields: [accountId], references: [id])
   integration   Integration @relation(fields: [integrationId], references: [id])
   createdAt     DateTime    @default(now())
 }
+

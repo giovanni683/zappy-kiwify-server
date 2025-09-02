@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function getNotificationRules(status?: "active" | "inactive") {
   if (status === "active") {
@@ -10,8 +11,14 @@ export async function getNotificationRules(status?: "active" | "inactive") {
   return prisma.notificationRule.findMany();
 }
 
-export async function createNotificationRule(data: { id?: string; integrationId: string; accountId: string; active: boolean; event: number | string; message: string; adjustments: object }) {
-  return prisma.notificationRule.create({ data: { ...data, event: Number(data.event) } });
+export async function createNotificationRule(data: { id?: string; integrationId: string; accountId: string; active: boolean; event: number; message: string; adjustments?: Prisma.InputJsonValue | null; variables?: object }) {
+  return prisma.notificationRule.create({
+    data: {
+      ...data,
+      adjustments: data.adjustments ?? Prisma.JsonNull,
+      variables: (typeof data.variables === 'object' && data.variables !== null) ? data.variables : {}
+    }
+  });
 }
 
 export async function updateNotificationRuleStatus(id: string, active: boolean) {

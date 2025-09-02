@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { sendZenviaNotification } from '../services/zenviaService';
+import { sendMessage } from '../services/sendMessage';
 import { prisma } from '../config/prisma';
 import { uuidv7 } from 'uuidv7';
 
@@ -36,10 +36,11 @@ export async function handleKiwifyWebhook(req: Request, res: Response) {
         integrationId: event.integration_id,
         active: true,
         event: event.event_code || 1,
-        message: JSON.stringify(event)
+        message: JSON.stringify(event),
+        variables: {}
       }
     });
-    await sendZenviaNotification(event);
+    await sendMessage(event);
     console.log(`Evento Kiwify registrado para account_id: ${event.account_id}`);
     res.status(200).json({ success: true });
   } catch (err: any) {
@@ -55,7 +56,7 @@ export async function handleWebhook(req: Request, res: Response) {
     return res.status(400).json({ error: 'Notification inválida.' });
   }
   try {
-    await sendZenviaNotification(notification);
+    await sendMessage(notification);
     console.log('Notificação processada via webhook.');
     res.status(200).json({ success: true });
   } catch (err: any) {

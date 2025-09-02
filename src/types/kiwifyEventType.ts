@@ -1,0 +1,11 @@
+export type KiwifyEventType =
+  | 'boleto_gerado'
+  | 'pix_gerado'
+  | 'compra_aprovada'
+  | 'compra_recusada'
+  | 'carrinho_abandonado'
+  | 'subscription_late'
+  | 'subscription_canceled'
+  | 'compra_reembolsada'   
+  | 'chargeback'           
+  | 'subscription_renewed'
