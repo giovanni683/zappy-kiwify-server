@@ -164,177 +164,188 @@ export async function kiwifyWebhookHandler(req: Request, res: Response) {
     let variables: Record<string, any> = ruleWithVariables.variables ?? {};
     const payload = req.body;
 
-    // Mapeamento seguro para todos os eventos suportados
-    if (eventType === 'boleto_gerado' || payload.webhook_event_type === 'billet_created') {
-      variables = {
-        ...variables,
-        urlBoleto: payload.boleto_URL ?? '',
-        codigoBarrasBoleto: payload.boleto_barcode ?? '',
-        dataExpiracaoBoleto: payload.boleto_expiry_date ?? '',
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? '',
-        telefone: payload.Customer?.mobile ?? '',
-        nomeProduto: payload.Product?.product_name ?? '',
-        idPedido: payload.order_id ?? '',
-        referenciaPedido: payload.order_ref ?? ''
-      };
-    } else if (eventType === 'pix_gerado' || payload.webhook_event_type === 'pix_created') {
-      variables = {
-        ...variables,
-        codigoPix: payload.pix_code ?? '',
-        dataExpiracaoPix: payload.pix_expiration ?? '',
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? '',
-        telefone: payload.Customer?.mobile ?? '',
-        nomeProduto: payload.Product?.product_name ?? '',
-        idPedido: payload.order_id ?? '',
-        referenciaPedido: payload.order_ref ?? ''
-      };
-    } else if (eventType === 'carrinho_abandonado' || payload.status === 'abandoned') {
-      variables = {
-        ...variables,
-        checkoutLink: payload.checkout_link ?? '',
-        nomeCompleto: payload.name ?? '',
-        email: payload.email ?? '',
-        telefone: payload.phone ?? '',
-        nomeProduto: payload.product_name ?? '',
-        idProduto: payload.product_id ?? '',
-        statusCarrinho: payload.status ?? '',
-        pais: payload.country ?? '',
-        cnpj: payload.cnpj ?? '',
-        dataCriacao: payload.created_at ?? '',
-        lojaId: payload.store_id ?? ''
-      };
-    } else if (eventType === 'compra_recusada' || payload.webhook_event_type === 'order_rejected') {
-      variables = {
-        ...variables,
-        motivoRecusa: payload.card_rejection_reason ?? '',
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? '',
-        telefone: payload.Customer?.mobile ?? '',
-        email: payload.Customer?.email ?? '',
-        nomeProduto: payload.Product?.product_name ?? '',
-        idPedido: payload.order_id ?? '',
-        referenciaPedido: payload.order_ref ?? '',
-        metodoPagamento: payload.payment_method ?? '',
-        tipoCartao: payload.card_type ?? '',
-        ultimosDigitosCartao: payload.card_last4digits ?? '',
-        lojaId: payload.store_id ?? '',
-        valorPedido: payload.Commissions?.charge_amount ?? ''
-      };
-    } else if (eventType === 'compra_aprovada' || payload.webhook_event_type === 'order_approved') {
-      variables = {
-        ...variables,
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? '',
-        telefone: payload.Customer?.mobile ?? '',
-        email: payload.Customer?.email ?? '',
-        nomeProduto: payload.Product?.product_name ?? '',
-        idPedido: payload.order_id ?? '',
-        referenciaPedido: payload.order_ref ?? '',
-        metodoPagamento: payload.payment_method ?? '',
-        tipoCartao: payload.card_type ?? '',
-        ultimosDigitosCartao: payload.card_last4digits ?? '',
-        lojaId: payload.store_id ?? '',
-        valorPedido: payload.Commissions?.charge_amount ?? '',
-        dataAprovacao: payload.approved_date ?? '',
-        cpf: payload.Customer?.CPF ?? '',
-        planoAssinatura: payload.Subscription?.plan?.name ?? '',
-        urlAcesso: payload.access_url ?? ''
-      };
-    } else if (eventType === 'compra_reembolsada' || payload.webhook_event_type === 'order_refunded') {
-      variables = {
-        ...variables,
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? '',
-        telefone: payload.Customer?.mobile ?? '',
-        email: payload.Customer?.email ?? '',
-        nomeProduto: payload.Product?.product_name ?? '',
-        idPedido: payload.order_id ?? '',
-        referenciaPedido: payload.order_ref ?? '',
-        metodoPagamento: payload.payment_method ?? '',
-        tipoCartao: payload.card_type ?? '',
-        ultimosDigitosCartao: payload.card_last4digits ?? '',
-        lojaId: payload.store_id ?? '',
-        valorPedido: payload.Commissions?.charge_amount ?? '',
-        dataReembolso: payload.refunded_at ?? '',
-        cpf: payload.Customer?.CPF ?? '',
-        planoAssinatura: payload.Subscription?.plan?.name ?? ''
-      };
-    } else if (eventType === 'chargeback' || payload.webhook_event_type === 'chargeback') {
-      variables = {
-        ...variables,
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? '',
-        telefone: payload.Customer?.mobile ?? '',
-        email: payload.Customer?.email ?? '',
-        nomeProduto: payload.Product?.product_name ?? '',
-        idPedido: payload.order_id ?? '',
-        referenciaPedido: payload.order_ref ?? '',
-        metodoPagamento: payload.payment_method ?? '',
-        tipoCartao: payload.card_type ?? '',
-        ultimosDigitosCartao: payload.card_last4digits ?? '',
-        lojaId: payload.store_id ?? '',
-        valorPedido: payload.Commissions?.charge_amount ?? '',
-        cpf: payload.Customer?.CPF ?? '',
-        planoAssinatura: payload.Subscription?.plan?.name ?? ''
-      };
-    } else if (
-      eventType === 'subscription_late' ||
-      payload.webhook_event_type === 'subscription_late'
-    ) {
-      variables = {
-        ...variables,
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? '',
-        telefone: payload.Customer?.mobile ?? '',
-        email: payload.Customer?.email ?? '',
-        nomeProduto: payload.Product?.product_name ?? '',
-        idPedido: payload.order_id ?? '',
-        referenciaPedido: payload.order_ref ?? '',
-        metodoPagamento: payload.payment_method ?? '',
-        tipoCartao: payload.card_type ?? '',
-        ultimosDigitosCartao: payload.card_last4digits ?? '',
-        lojaId: payload.store_id ?? '',
-        valorPedido: payload.Commissions?.charge_amount ?? '',
-        cpf: payload.Customer?.CPF ?? '',
-        planoAssinatura: payload.Subscription?.plan?.name ?? '',
-        statusAssinatura: payload.Subscription?.status ?? '',
-        dataProximaCobranca: payload.Subscription?.charges?.future?.[0]?.charge_date ?? ''
-      };
-    } else if (
-      eventType === 'subscription_renewed' ||
-      payload.webhook_event_type === 'subscription_renewed'
-    ) {
-      variables = {
-        ...variables,
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? '',
-        telefone: payload.Customer?.mobile ?? '',
-        email: payload.Customer?.email ?? '',
-        nomeProduto: payload.Product?.product_name ?? '',
-        idPedido: payload.order_id ?? '',
-        referenciaPedido: payload.order_ref ?? '',
-        metodoPagamento: payload.payment_method ?? '',
-        tipoCartao: payload.card_type ?? '',
-        ultimosDigitosCartao: payload.card_last4digits ?? '',
-        lojaId: payload.store_id ?? '',
-        valorPedido: payload.Commissions?.charge_amount ?? '',
-        cpf: payload.Customer?.CPF ?? '',
-        planoAssinatura: payload.Subscription?.plan?.name ?? '',
-        statusAssinatura: payload.Subscription?.status ?? '',
-        dataProximaCobranca: payload.Subscription?.charges?.future?.[0]?.charge_date ?? ''
-      };
-    } else {
-      variables = { ...variables, ...payload };
+    switch (eventType) {
+      case 'boleto_gerado':
+      case 'billet_created':
+        variables = {
+          ...variables,
+          urlBoleto: payload.boleto_URL ?? '',
+          codigoBarrasBoleto: payload.boleto_barcode ?? '',
+          dataExpiracaoBoleto: payload.boleto_expiry_date ?? '',
+          statusPagamento: payload.order_status ?? '',
+          nomeCompleto: payload.Customer?.full_name ?? '',
+          primeiroNome: payload.Customer?.first_name ?? '',
+          telefone: payload.Customer?.mobile ?? '',
+          nomeProduto: payload.Product?.product_name ?? '',
+          idPedido: payload.order_id ?? '',
+          referenciaPedido: payload.order_ref ?? ''
+        };
+        break;
+      case 'pix_gerado':
+      case 'pix_created':
+        variables = {
+          ...variables,
+          codigoPix: payload.pix_code ?? '',
+          dataExpiracaoPix: payload.pix_expiration ?? '',
+          statusPagamento: payload.order_status ?? '',
+          nomeCompleto: payload.Customer?.full_name ?? '',
+          primeiroNome: payload.Customer?.first_name ?? '',
+          telefone: payload.Customer?.mobile ?? '',
+          nomeProduto: payload.Product?.product_name ?? '',
+          idPedido: payload.order_id ?? '',
+          referenciaPedido: payload.order_ref ?? ''
+        };
+        break;
+      case 'carrinho_abandonado':
+        if (payload.status === 'abandoned') {
+          variables = {
+            ...variables,
+            checkoutLink: payload.checkout_link ?? '',
+            nomeCompleto: payload.name ?? '',
+            email: payload.email ?? '',
+            telefone: payload.phone ?? '',
+            nomeProduto: payload.product_name ?? '',
+            idProduto: payload.product_id ?? '',
+            statusCarrinho: payload.status ?? '',
+            pais: payload.country ?? '',
+            cnpj: payload.cnpj ?? '',
+            dataCriacao: payload.created_at ?? '',
+            lojaId: payload.store_id ?? ''
+          };
+        }
+        break;
+      case 'compra_recusada':
+      case 'order_rejected':
+        variables = {
+          ...variables,
+          motivoRecusa: payload.card_rejection_reason ?? '',
+          statusPagamento: payload.order_status ?? '',
+          nomeCompleto: payload.Customer?.full_name ?? '',
+          primeiroNome: payload.Customer?.first_name ?? '',
+          telefone: payload.Customer?.mobile ?? '',
+          email: payload.Customer?.email ?? '',
+          nomeProduto: payload.Product?.product_name ?? '',
+          idPedido: payload.order_id ?? '',
+          referenciaPedido: payload.order_ref ?? '',
+          metodoPagamento: payload.payment_method ?? '',
+          tipoCartao: payload.card_type ?? '',
+          ultimosDigitosCartao: payload.card_last4digits ?? '',
+          lojaId: payload.store_id ?? '',
+          valorPedido: payload.Commissions?.charge_amount ?? ''
+        };
+        break;
+      case 'compra_aprovada':
+      case 'order_approved':
+        variables = {
+          ...variables,
+          statusPagamento: payload.order_status ?? '',
+          nomeCompleto: payload.Customer?.full_name ?? '',
+          primeiroNome: payload.Customer?.first_name ?? '',
+          telefone: payload.Customer?.mobile ?? '',
+          email: payload.Customer?.email ?? '',
+          nomeProduto: payload.Product?.product_name ?? '',
+          idPedido: payload.order_id ?? '',
+          referenciaPedido: payload.order_ref ?? '',
+          metodoPagamento: payload.payment_method ?? '',
+          tipoCartao: payload.card_type ?? '',
+          ultimosDigitosCartao: payload.card_last4digits ?? '',
+          lojaId: payload.store_id ?? '',
+          valorPedido: payload.Commissions?.charge_amount ?? '',
+          dataAprovacao: payload.approved_date ?? '',
+          cpf: payload.Customer?.CPF ?? '',
+          planoAssinatura: payload.Subscription?.plan?.name ?? '',
+          urlAcesso: payload.access_url ?? ''
+        };
+        break;
+      case 'compra_reembolsada':
+      case 'order_refunded':
+        variables = {
+          ...variables,
+          statusPagamento: payload.order_status ?? '',
+          nomeCompleto: payload.Customer?.full_name ?? '',
+          primeiroNome: payload.Customer?.first_name ?? '',
+          telefone: payload.Customer?.mobile ?? '',
+          email: payload.Customer?.email ?? '',
+          nomeProduto: payload.Product?.product_name ?? '',
+          idPedido: payload.order_id ?? '',
+          referenciaPedido: payload.order_ref ?? '',
+          metodoPagamento: payload.payment_method ?? '',
+          tipoCartao: payload.card_type ?? '',
+          ultimosDigitosCartao: payload.card_last4digits ?? '',
+          lojaId: payload.store_id ?? '',
+          valorPedido: payload.Commissions?.charge_amount ?? '',
+          dataReembolso: payload.refunded_at ?? '',
+          cpf: payload.Customer?.CPF ?? '',
+          planoAssinatura: payload.Subscription?.plan?.name ?? ''
+        };
+        break;
+      case 'chargeback':
+        variables = {
+          ...variables,
+          statusPagamento: payload.order_status ?? '',
+          nomeCompleto: payload.Customer?.full_name ?? '',
+          primeiroNome: payload.Customer?.first_name ?? '',
+          telefone: payload.Customer?.mobile ?? '',
+          email: payload.Customer?.email ?? '',
+          nomeProduto: payload.Product?.product_name ?? '',
+          idPedido: payload.order_id ?? '',
+          referenciaPedido: payload.order_ref ?? '',
+          metodoPagamento: payload.payment_method ?? '',
+          tipoCartao: payload.card_type ?? '',
+          ultimosDigitosCartao: payload.card_last4digits ?? '',
+          lojaId: payload.store_id ?? '',
+          valorPedido: payload.Commissions?.charge_amount ?? '',
+          cpf: payload.Customer?.CPF ?? '',
+          planoAssinatura: payload.Subscription?.plan?.name ?? ''
+        };
+        break;
+      case 'subscription_late':
+        variables = {
+          ...variables,
+          statusPagamento: payload.order_status ?? '',
+          nomeCompleto: payload.Customer?.full_name ?? '',
+          primeiroNome: payload.Customer?.first_name ?? '',
+          telefone: payload.Customer?.mobile ?? '',
+          email: payload.Customer?.email ?? '',
+          nomeProduto: payload.Product?.product_name ?? '',
+          idPedido: payload.order_id ?? '',
+          referenciaPedido: payload.order_ref ?? '',
+          metodoPagamento: payload.payment_method ?? '',
+          tipoCartao: payload.card_type ?? '',
+          ultimosDigitosCartao: payload.card_last4digits ?? '',
+          lojaId: payload.store_id ?? '',
+          valorPedido: payload.Commissions?.charge_amount ?? '',
+          cpf: payload.Customer?.CPF ?? '',
+          planoAssinatura: payload.Subscription?.plan?.name ?? '',
+          statusAssinatura: payload.Subscription?.status ?? '',
+          dataProximaCobranca: payload.Subscription?.charges?.future?.[0]?.charge_date ?? ''
+        };
+        break;
+      case 'subscription_renewed':
+        variables = {
+          ...variables,
+          statusPagamento: payload.order_status ?? '',
+          nomeCompleto: payload.Customer?.full_name ?? '',
+          primeiroNome: payload.Customer?.first_name ?? '',
+          telefone: payload.Customer?.mobile ?? '',
+          email: payload.Customer?.email ?? '',
+          nomeProduto: payload.Product?.product_name ?? '',
+          idPedido: payload.order_id ?? '',
+          referenciaPedido: payload.order_ref ?? '',
+          metodoPagamento: payload.payment_method ?? '',
+          tipoCartao: payload.card_type ?? '',
+          ultimosDigitosCartao: payload.card_last4digits ?? '',
+          lojaId: payload.store_id ?? '',
+          valorPedido: payload.Commissions?.charge_amount ?? '',
+          cpf: payload.Customer?.CPF ?? '',
+          planoAssinatura: payload.Subscription?.plan?.name ?? '',
+          statusAssinatura: payload.Subscription?.status ?? '',
+          dataProximaCobranca: payload.Subscription?.charges?.future?.[0]?.charge_date ?? ''
+        };
+        break;
+      default:
+        variables = { ...variables, ...payload };
+        break;
     }
 
     const message = interpolateMessage(rule.message, variables);

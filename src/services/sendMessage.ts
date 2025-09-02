@@ -84,6 +84,12 @@ export async function sendMessage(notification: {
     const usedDefaultConnection = !notification.connectionFrom;
     const transferredToSector = notification.sector || null;
 
+    console.log('Enviando mensagem para:', phone, 'com dados:', {
+      body: message,
+      connectionFrom: notification.connectionFrom ? Number(notification.connectionFrom) : 0,
+      ticketStrategy: 'create'
+    });
+
     const response = await zdk.messages.send(
       phone,
       {
@@ -92,6 +98,7 @@ export async function sendMessage(notification: {
         ticketStrategy: 'create'
       }
     );
+    console.log('Resposta do ZDK:', response);
     return {
       success: true,
       response,
@@ -105,4 +112,12 @@ export async function sendMessage(notification: {
     console.error('Erro ao enviar mensagem Zappy:', error);
     throw error;
   }
+}
+
+// Envia mensagem usando credenciais Zappy da conta (exemplo simplificado para depuração)
+export async function sendMessageDebug(data: any) {
+  console.log('Dados recebidos para envio:', data);
+
+  
+  return { success: true, info: 'Envio simulado. Ajuste conforme necessário.' };
 }

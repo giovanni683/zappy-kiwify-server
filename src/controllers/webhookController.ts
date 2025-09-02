@@ -18,7 +18,7 @@ export async function handleKiwifyWebhook(req: Request, res: Response) {
   if (!event || typeof event !== 'object') {
     console.error('Webhook Kiwify: evento inválido');
     return res.status(400).json({ error: 'Evento inválido.' });
-  }
+  } console.log (event)
   if (!event.account_id || typeof event.account_id !== 'string' || event.account_id.trim() === '') {
     console.error('Webhook Kiwify: account_id inválido');
     return res.status(400).json({ error: 'account_id é obrigatório, deve ser string e não pode ser vazio.' });
