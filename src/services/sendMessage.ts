@@ -63,12 +63,15 @@ export async function sendMessage(notification: {
     const variables: Record<string, any> = notification.variables || {};
     // Mapeia variáveis do payload para os templates
     const mappedVariables: Record<string, any> = {
+      ...notification,
       ...variables,
-      primeiroNome: variables.primeiroNome || notification.Customer?.first_name || notification.customer?.first_name,
-      urlBoleto: variables.urlBoleto || notification.boleto_URL,
-      codigoBoleto: variables.codigoBoleto || notification.boleto_barcode,
-      statusPedido: variables.statusPedido || notification.order_status,
-      codigoPix: variables.codigoPix || notification.pix_code
+      primeiroNome: variables.primeiroNome || notification.Customer?.first_name || notification.customer?.first_name || notification.Customer?.full_name || notification.customer?.full_name || notification.name,
+      urlBoleto: variables.urlBoleto || notification.boleto_URL || notification.urlBoleto,
+      codigoBoleto: variables.codigoBoleto || notification.boleto_barcode || notification.codigoBoleto,
+      statusPedido: variables.statusPedido || notification.order_status || notification.statusPedido,
+      codigoPix: variables.codigoPix || notification.pix_code || notification.codigoPix,
+      nome: notification.nome || notification.Customer?.full_name || notification.customer?.full_name || notification.name,
+      telefone: notification.telefone || notification.Customer?.mobile || notification.customer?.mobile || notification.phone
     };
     const message = interpolateMessage(template, mappedVariables);
 

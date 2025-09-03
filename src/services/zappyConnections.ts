@@ -7,8 +7,8 @@ export async function listZappyConnections(accountId?: string) {
   if (!zappyUrl || !zappyToken) {
     throw new Error('Credenciais Zappy não encontradas para a conta.');
   }
-  // Instancia Zdk conforme exemplo
-  const zdk = new Zdk(zappyToken, zappyUrl); // Corrige ordem: token, url
+  // Instancia Zdk conforme padrão: url, token
+  const zdk = new Zdk(zappyUrl, zappyToken);
   if (typeof zdk.connections?.list === 'function') {
     const result = await zdk.connections.list();
     console.log('Retorno bruto do SDK:', result); // DEBUG

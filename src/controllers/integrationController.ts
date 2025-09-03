@@ -3,7 +3,7 @@ import { prisma } from '../config/prisma';
 import { uuidv7 } from 'uuidv7';
 import { sendMessageToClient } from '../utils/sendMessageToClient';
 import { interpolateMessage } from '../utils/interpolateMessage';
-import { sendNotification } from '../services/notificationService';
+import { sendMessage } from '../services/sendMessage';
 import {
   createNotificationRule,
   getNotificationRules,
@@ -99,7 +99,7 @@ export async function sendNotificationController(req: Request, res: Response) {
     return res.status(400).json({ error: 'O campo message é obrigatório, deve ser string e não pode ser vazio.' });
   }
   try {
-    await sendNotification({ title, message });
+    await sendMessage({ eventType: 'custom_notification', title, message });
     res.status(200).json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
