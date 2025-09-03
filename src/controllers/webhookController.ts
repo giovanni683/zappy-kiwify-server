@@ -17,9 +17,9 @@ export async function handleKiwifyWebhook(req: Request, res: Response) {
   }
   try {
     // Processa e dispara para Zappy, sem registrar no banco
-    await sendMessage({ ...event, accountId });
+    const result = await sendMessage({ ...event, accountId });
     console.log(`Evento Kiwify processado para account_id: ${accountId}`);
-    res.status(200).json({ success: true });
+    res.status(200).json(result);
   } catch (err: any) {
     console.error('Erro ao processar webhook Kiwify:', err);
     res.status(500).json({ error: err.message });

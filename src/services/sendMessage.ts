@@ -1,6 +1,5 @@
 // Retorna as credenciais (url e token) da Zappy para um accountId
 import { prisma } from '../config/prisma';
-import { ChannelKey } from '../types/channelKey';
 import { interpolateMessage } from '../utils/interpolateMessage';
 // DynamicVariables removido, usar Record<string, any>
 import { Zdk } from 'zdk';
@@ -36,6 +35,7 @@ function isValidPhoneNumber(phone: string): boolean {
 
 // Envia mensagem usando credenciais Zappy da conta
 export async function sendMessage(notification: {
+  [key: string]: any;
   accountId?: string;
   eventType: string | number;
   variables?: Record<string, any>;
@@ -43,7 +43,8 @@ export async function sendMessage(notification: {
   to?: string;
   connectionFrom?: string;
   sector?: string;
-  Customer?: { mobile?: string };
+  Customer?: { [key: string]: any };
+  customer?: { [key: string]: any };
 }) {
   try {
     const templates: Record<string | number, string> = {
@@ -58,17 +59,42 @@ export async function sendMessage(notification: {
       chargeback: 'Olá {{primeiroNome}}, ocorreu um chargeback em sua compra.',
       subscription_renewed: 'Olá {{primeiroNome}}, sua assinatura foi renovada com sucesso!'
     };
-
     const template = templates[notification.eventType] || 'Nova notificação do Kiwify!';
     const variables: Record<string, any> = notification.variables || {};
-    const message = interpolateMessage(template, variables);
+    // Mapeia variáveis do payload para os templates
+    const mappedVariables: Record<string, any> = {
+      ...variables,
+      primeiroNome: variables.primeiroNome || notification.Customer?.first_name || notification.customer?.first_name,
+      urlBoleto: variables.urlBoleto || notification.boleto_URL,
+      codigoBoleto: variables.codigoBoleto || notification.boleto_barcode,
+      statusPedido: variables.statusPedido || notification.order_status,
+      codigoPix: variables.codigoPix || notification.pix_code
+    };
+    const message = interpolateMessage(template, mappedVariables);
 
-    // Captura o número de telefone de diferentes fontes
+    // Captura o número de telefone de diferentes fontes e variações
     let phone = notification.phone || notification.to;
-    if (!phone && notification.Customer && notification.Customer.mobile) {
-      phone = notification.Customer.mobile;
-      console.log('Usando Customer.mobile como número de telefone:', phone);
+    if (!phone) {
+      if (notification.Customer && notification.Customer.mobile) {
+        phone = notification.Customer.mobile;
+        console.log('Usando Customer.mobile como número de telefone:', phone);
+      } else if (notification.customer && notification.customer.mobile) {
+        phone = notification.customer.mobile;
+        console.log('Usando customer.mobile como número de telefone:', phone);
+      }
     }
+    // Normaliza número para formato internacional
+    if (phone && !phone.startsWith('+')) {
+      // Se já começa com 55, só prefixa +
+      if (phone.startsWith('55')) {
+        phone = '+' + phone;
+      } else {
+        // Se não, prefixa +55
+        phone = '+55' + phone.replace(/^0+/, '');
+      }
+      console.log('Número normalizado para formato internacional:', phone);
+    }
+    console.log('Número de telefone capturado:', phone);
     if (!phone || !isValidPhoneNumber(phone)) {
       return {
         success: false,
@@ -80,28 +106,31 @@ export async function sendMessage(notification: {
         }
       };
     }
-
+   
     // Busca credenciais Zappy corretas
     const { zappyUrl, zappyToken } = await getZappyCredentials(notification.accountId);
     console.log('Credenciais Zappy utilizadas:', { zappyUrl, zappyToken });
-
+    
     // Instancia Zdk com credenciais da conta
     // Ajuste conforme documentação do Zdk: se espera string, passe apenas o token
-    const zdk = new Zdk(zappyToken, zappyUrl);
+    const zdk = new Zdk(zappyUrl, zappyToken);
 
     const hasZappyConnection = !!notification.connectionFrom;
     const usedDefaultConnection = !notification.connectionFrom;
     const transferredToSector = notification.sector || null;
 
-    console.log('Enviando mensagem para:', phone, 'com dados:', {
+    // Remove o + do início antes de enviar para o Zappy
+    const phoneToSend = phone.startsWith('+') ? phone.slice(1) : phone;
+
+    console.log('Enviando mensagem para:', phoneToSend, 'com dados:', {
       body: message,
       connectionFrom: notification.connectionFrom ? Number(notification.connectionFrom) : 0,
       ticketStrategy: 'create'
     });
 
-    console.log('Preparando para enviar mensagem para:', phone);
+    console.log('Preparando para enviar mensagem para:', phoneToSend);
     const response = await zdk.messages.send(
-      phone,
+      phoneToSend,
       {
         body: message,
         connectionFrom: notification.connectionFrom ? Number(notification.connectionFrom) : 0,
