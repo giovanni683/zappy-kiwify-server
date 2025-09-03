@@ -1,47 +1,24 @@
 import { Request, Response } from 'express';
 import { sendMessage } from '../services/sendMessage';
-import { prisma } from '../config/prisma';
-import { uuidv7 } from 'uuidv7';
 
 export async function handleKiwifyWebhook(req: Request, res: Response) {
-  // Validação dos headers obrigatórios
-  const authHeader = req.headers['authorization'];
-  const accountHeader = req.headers['x-kiwify-account-id'];
-  if (!authHeader || typeof authHeader !== 'string') {
-    return res.status(401).json({ error: 'Authorization header (Bearer token) obrigatório.' });
-  }
-  if (!accountHeader || typeof accountHeader !== 'string') {
-    return res.status(401).json({ error: 'x-kiwify-account-id header obrigatório.' });
-  }
   const event = req.body;
+  const accountId = req.params.accountId;
+  console.log('accountId dos params:', accountId);
   // Validação básica dos dados do evento
   if (!event || typeof event !== 'object') {
     console.error('Webhook Kiwify: evento inválido');
     return res.status(400).json({ error: 'Evento inválido.' });
-  } console.log (event)
-  if (!event.account_id || typeof event.account_id !== 'string' || event.account_id.trim() === '') {
+  }
+  console.log(event);
+  if (!accountId || typeof accountId !== 'string' || accountId.trim() === '') {
     console.error('Webhook Kiwify: account_id inválido');
     return res.status(400).json({ error: 'account_id é obrigatório, deve ser string e não pode ser vazio.' });
   }
-  if (!event.integration_id || typeof event.integration_id !== 'string' || event.integration_id.trim() === '') {
-    console.error('Webhook Kiwify: integration_id inválido');
-    return res.status(400).json({ error: 'integration_id é obrigatório, deve ser string e não pode ser vazio.' });
-  }
   try {
-    const id = uuidv7();
-    await prisma.notificationRule.create({
-      data: {
-        id,
-        accountId: event.account_id,
-        integrationId: event.integration_id,
-        active: true,
-        event: event.event_code || 1,
-        message: JSON.stringify(event),
-        variables: {}
-      }
-    });
-    await sendMessage(event);
-    console.log(`Evento Kiwify registrado para account_id: ${event.account_id}`);
+    // Processa e dispara para Zappy, sem registrar no banco
+    await sendMessage({ ...event, accountId });
+    console.log(`Evento Kiwify processado para account_id: ${accountId}`);
     res.status(200).json({ success: true });
   } catch (err: any) {
     console.error('Erro ao processar webhook Kiwify:', err);

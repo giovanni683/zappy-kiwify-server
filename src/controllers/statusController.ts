@@ -18,3 +18,33 @@ export const getLogs = (req: Request, res: Response) => {
 export function getLogsFunction(req: Request, res: Response) {
   res.json({ logs: ['Log de integração', 'Erro de conexão', 'Evento X'] });
 }
+
+export const getSupportedEvents = (req: Request, res: Response) => {
+  const events = [
+    'boleto_gerado',
+    'pix_gerado',
+    'compra_aprovada',
+    'compra_recusada',
+    'carrinho_abandonado',
+    'subscription_late',
+    'subscription_canceled',
+    'compra_reembolsada',
+    'chargeback',
+    'subscription_renewed'
+  ];
+  res.json({ events });
+};
+
+export const getDynamicVariables = (req: Request, res: Response) => {
+  const variables = [
+    'nomeCompleto',
+    'primeiroNome',
+    'urlBoleto',
+    'codigoBarrasBoleto',
+    'dataExpiracaoBoleto',
+    'statusPagamento',
+    'codigoPix',
+    'dataExpiracaoPix'
+  ];
+  res.json({ variables });
+};

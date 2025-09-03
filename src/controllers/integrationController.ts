@@ -10,6 +10,7 @@ import {
   updateNotificationRuleStatus,
   deleteNotificationRule
 } from '../models/notificationRuleModel';
+import { listZappyConnections } from '../services/zappyConnections';
 
 // Listar integrações (por accountId ou todas)
 export async function listIntegrations(req: Request, res: Response) {
@@ -56,9 +57,9 @@ export async function createIntegration(req: Request, res: Response) {
 
 // Criar conta (ZAPPY)
 export async function createAccount(req: Request, res: Response) {
-  const { name, status, ZappyUrl, kiwifyToken } = req.body;
-  if (!name || typeof status !== 'number' || String(name).trim() === '' || !ZappyUrl || String(ZappyUrl).trim() === '' || !kiwifyToken || String(kiwifyToken).trim() === '') {
-    return res.status(400).json({ error: 'Campos obrigatórios ausentes ou vazios: name (string), status (number), ZappyUrl, kiwifyToken.' });
+  const { name, status, ZappyUrl } = req.body;
+  if (!name || typeof status !== 'number' || String(name).trim() === '' || !ZappyUrl || String(ZappyUrl).trim() === '') {
+    return res.status(400).json({ error: 'Campos obrigatórios ausentes ou vazios: name (string), status (number), ZappyUrl.' });
   }
   try {
     const id = uuidv7();
@@ -68,8 +69,7 @@ export async function createAccount(req: Request, res: Response) {
         name,
         status,
         credentials: {
-          zappyUrl: ZappyUrl,
-          kiwifyToken
+          zappyUrl: ZappyUrl
         }
       }
     });
@@ -209,6 +209,32 @@ export async function kiwifyWebhookHandler(req: Request, res: Response) {
     res.status(200).json({ success: true });
   } catch (err: any) {
     console.error('Erro ao processar webhook da Kiwify:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// Listar conexões Zappy (persistidas no banco)
+export async function listConnectionsController(req: Request, res: Response) {
+  const { accountId } = req.query;
+  try {
+    const where: any = { type: 'ZAPPY' };
+    if (accountId) {
+      where.accountId = String(accountId);
+    }
+    const connections = await prisma.integration.findMany({ where });
+    res.status(200).json(connections);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// Listar conexões Zappy ativas via SDK
+export async function listZappyConnectionsController(req: Request, res: Response) {
+  const { accountId } = req.query;
+  try {
+    const connections = await listZappyConnections(accountId as string);
+    res.status(200).json(connections);
+  } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 }

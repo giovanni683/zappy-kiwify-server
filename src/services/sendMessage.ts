@@ -8,15 +8,17 @@ import { Zdk } from 'zdk';
 // Busca credenciais Zappy para um accountId
 export async function getZappyCredentials(accountId?: string): Promise<{ zappyUrl: string, zappyToken: string }> {
   if (accountId) {
+    console.log('Buscando integração ZAPPY para accountId:', accountId);
     const integration = await prisma.integration.findFirst({
       where: {
         accountId,
-        type: String(ChannelKey.ZAPPY)
+        type: 'ZAPPY'
       }
     });
+    console.log('Retorno da integração:', integration);
     if (integration && integration.credentials) {
-      // Corrigido para zappyUrl e zappyToken
       const { zappyUrl, zappyToken } = integration.credentials as { zappyUrl: string, zappyToken: string };
+      console.log('Credenciais extraídas:', { zappyUrl, zappyToken });
       if (zappyUrl && zappyToken) return { zappyUrl, zappyToken };
     }
   }
@@ -41,6 +43,7 @@ export async function sendMessage(notification: {
   to?: string;
   connectionFrom?: string;
   sector?: string;
+  Customer?: { mobile?: string };
 }) {
   try {
     const templates: Record<string | number, string> = {
@@ -60,7 +63,12 @@ export async function sendMessage(notification: {
     const variables: Record<string, any> = notification.variables || {};
     const message = interpolateMessage(template, variables);
 
-    const phone = notification.phone || notification.to;
+    // Captura o número de telefone de diferentes fontes
+    let phone = notification.phone || notification.to;
+    if (!phone && notification.Customer && notification.Customer.mobile) {
+      phone = notification.Customer.mobile;
+      console.log('Usando Customer.mobile como número de telefone:', phone);
+    }
     if (!phone || !isValidPhoneNumber(phone)) {
       return {
         success: false,
@@ -75,6 +83,7 @@ export async function sendMessage(notification: {
 
     // Busca credenciais Zappy corretas
     const { zappyUrl, zappyToken } = await getZappyCredentials(notification.accountId);
+    console.log('Credenciais Zappy utilizadas:', { zappyUrl, zappyToken });
 
     // Instancia Zdk com credenciais da conta
     // Ajuste conforme documentação do Zdk: se espera string, passe apenas o token
@@ -90,6 +99,7 @@ export async function sendMessage(notification: {
       ticketStrategy: 'create'
     });
 
+    console.log('Preparando para enviar mensagem para:', phone);
     const response = await zdk.messages.send(
       phone,
       {
@@ -98,7 +108,7 @@ export async function sendMessage(notification: {
         ticketStrategy: 'create'
       }
     );
-    console.log('Resposta do ZDK:', response);
+    console.log('Resposta do ZDK (envio de mensagem):', response); // LOG EXTRA
     return {
       success: true,
       response,
@@ -109,8 +119,7 @@ export async function sendMessage(notification: {
       }
     };
   } catch (error) {
-    console.error('Erro ao enviar mensagem Zappy:', error);
-    throw error;
+    console.error('Erro ao enviar mensagem via ZDK:', error);
   }
 }
 
