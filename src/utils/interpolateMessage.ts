@@ -27,8 +27,8 @@ export function validateDynamicVariables(template: string): string[] {
  * Exemplo: "Olá {{primeiroNome}}" => "Olá João"
  */
 export function interpolateMessage(template: string, variables: Record<string, any>): string {
-  return template.replace(/{{(\w+)}}/g, (match, key) => {
+  return template.replace(/{{\s*(\w+)\s*}}/g, (_, key) => {
     const value = variables[key];
-    return value !== undefined ? String(value) : match;
+    return value !== undefined && value !== null ? String(value) : '';
   });
 }

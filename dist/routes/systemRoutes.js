@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const statusController_1 = require("../controllers/statusController");
+const router = (0, express_1.Router)();
+router.get('/health', statusController_1.healthCheck);
+router.get('/stats', statusController_1.getStats);
+router.get('/logs', statusController_1.getLogs);
+router.get('/logs-function', statusController_1.getLogsFunction);
+router.get('/events', statusController_1.getSupportedEvents);
+router.get('/variables', statusController_1.getDynamicVariables);
+exports.default = router;

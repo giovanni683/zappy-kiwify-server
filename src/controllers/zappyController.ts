@@ -92,7 +92,7 @@ export async function listIntegrations(req: Request, res: Response) {
 // Criar regra de notificação
 export async function createNotificationRule(req: Request, res: Response) {
   const { integrationId, accountId, active, event, message, adjustments } = req.body;
-  if (!integrationId || !accountId || typeof active !== 'boolean' || typeof event !== 'number' || !message ||
+  if (!integrationId || !accountId || typeof active !== 'boolean' || typeof event !== 'string' || !message ||
       String(integrationId).trim() === '' || String(accountId).trim() === '' || String(message).trim() === '') {
     return res.status(400).json({ error: 'Campos obrigatórios ausentes ou vazios: integrationId (string), accountId (string), active (boolean), event (number), message (string).' });
   }
@@ -128,7 +128,9 @@ export async function createNotificationRule(req: Request, res: Response) {
 // Listar regras de notificação
 export async function listNotificationRules(req: Request, res: Response) {
   try {
-    const rules = await prisma.notificationRule.findMany();
+    const rules = await prisma.notificationRule.findMany({
+      include: { sector: true }
+    });
     res.json(rules);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -170,6 +172,30 @@ export async function kiwifyWebhookHandler(req: Request, res: Response) {
   });
 
   res.status(200).json({ success: true, statusEnvio, errorMessage });
+}
+
+// Buscar regra de notificação por ID
+export async function getNotificationRuleById(req: Request, res: Response) {
+  const { id } = req.params;
+  try {
+    const rule = await prisma.notificationRule.findUnique({
+      where: { id },
+      include: { sector: true }
+    });
+    console.log('[DEBUG] NotificationRule:', rule); // log para depuração
+    if (!rule) {
+      return res.status(404).json({ error: 'Notification rule not found.' });
+    }
+    if (!rule.sector) {
+      console.log('[DEBUG] Sector está null para a regra', id);
+    } else {
+      console.log('[DEBUG] Sector retornado:', rule.sector);
+    }
+    res.json(rule);
+  } catch (error: any) {
+    console.error('[ERROR] getNotificationRuleById:', error);
+    res.status(500).json({ error: error.message });
+  }
 }
 
 

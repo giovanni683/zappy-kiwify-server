@@ -1,17 +1,15 @@
 import { prisma } from '../config/prisma';
 import { Prisma } from '@prisma/client';
 
-export async function getNotificationRules(status?: "active" | "inactive") {
-  if (status === "active") {
-    return prisma.notificationRule.findMany({ where: { active: true } });
-  }
-  if (status === "inactive") {
-    return prisma.notificationRule.findMany({ where: { active: false } });
-  }
-  return prisma.notificationRule.findMany();
+export async function getNotificationRules(status?: "active" | "inactive", accountId?: string) {
+  const where: any = {};
+  if (status === "active") where.active = true;
+  if (status === "inactive") where.active = false;
+  if (accountId) where.accountId = accountId;
+  return prisma.notificationRule.findMany({ where });
 }
 
-export async function createNotificationRule(data: { id?: string; integrationId: string; accountId: string; active: boolean; event: number; message: string; adjustments?: Prisma.InputJsonValue | null; variables?: object }) {
+export async function createNotificationRule(data: { id?: string; integrationId: string; accountId: string; active: boolean; event: string; message: string; adjustments?: Prisma.InputJsonValue | null; variables?: object }) {
   return prisma.notificationRule.create({
     data: {
       ...data,

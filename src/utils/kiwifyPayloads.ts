@@ -37,14 +37,13 @@ export function getKiwifyPayloadAndTemplate(eventType: string, payload: any) {
       break;
     case 'compra_aprovada':
     case 'order_approved':
-      payloads = {
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? ''
-      };
-      break;
     case 'compra_recusada':
     case 'order_rejected':
+    case 'compra_reembolsada':
+    case 'order_refunded':
+    case 'chargeback':
+    case 'subscription_late':
+    case 'subscription_renewed':
       payloads = {
         statusPagamento: payload.order_status ?? '',
         nomeCompleto: payload.Customer?.full_name ?? '',
@@ -58,35 +57,6 @@ export function getKiwifyPayloadAndTemplate(eventType: string, payload: any) {
           primeiroNome: payload.name?.split(' ')[0] ?? ''
         };
       }
-      break;
-    case 'compra_reembolsada':
-    case 'order_refunded':
-      payloads = {
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? ''
-      };
-      break;
-    case 'chargeback':
-      payloads = {
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? ''
-      };
-      break;
-    case 'subscription_late':
-      payloads = {
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? ''
-      };
-      break;
-    case 'subscription_renewed':
-      payloads = {
-        statusPagamento: payload.order_status ?? '',
-        nomeCompleto: payload.Customer?.full_name ?? '',
-        primeiroNome: payload.Customer?.first_name ?? ''
-      };
       break;
     default:
       payloads = { ...payload };

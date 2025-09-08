@@ -2,66 +2,100 @@ import { sendMessage } from './sendMessage';
 
 function formatPhoneNumber(phone: string): string {
   if (!phone) return '';
-  let cleaned = phone.replace(/^"+/, '').replace(/^\+/, '');
-  if (cleaned.startsWith('55')) cleaned = '+' + cleaned;
-  else cleaned = '+55' + cleaned.replace(/^0+/, '');
-  return cleaned;
+  const cleaned = phone.replace(/^"+/, '').replace(/\D/g, '');
+  return cleaned.startsWith('55') ? `+${cleaned}` : `+55${cleaned.replace(/^0+/, '')}`;
 }
 
 export async function handleKiwifyWebhook(payload: any) {
-  const eventType = payload.webhook_event_type;
-  const accountId = payload.account_id || payload.accountId;
-  const phone = formatPhoneNumber(payload.Customer?.mobile || payload.phone);
-
-  // Mapeia os dados para o modelo do sendMessage
-  const notification = {
+  const {
+    webhook_event_type,
+    account_id,
     accountId,
+    accountID,
+    accountid,
+    Customer = {},
+    boleto_URL,
+    boleto_barcode,
+    pix_code,
+    order_status,
+    valor_boleto,
+    name,
+    phone
+  } = payload;
+
+  const eventType = webhook_event_type;
+  const accId = account_id || accountId || accountID || accountid;
+  const mobile = formatPhoneNumber(Customer.mobile || phone);
+
+  if (!accId || typeof accId !== 'string' || accId.trim() === '') {
+    throw new Error('account_id é obrigatório, deve ser string e não pode ser vazio.');
+  }
+
+  const notification = {
+    ...payload,
+    accountId: accId,
     eventType,
-    phone,
+    phone: mobile,
     variables: {
-      primeiroNome: payload.Customer?.first_name || payload.Customer?.full_name || payload.name,
-      urlBoleto: payload.boleto_URL,
-      codigoBoleto: payload.boleto_barcode,
-      codigoPix: payload.pix_code,
-      statusPedido: payload.order_status,
-      valorBoleto: payload.valor_boleto,
-      pixCode: payload.pix_code
+      primeiroNome: Customer.first_name || Customer.full_name || name,
+      urlBoleto: boleto_URL,
+      codigoBoleto: boleto_barcode,
+      codigoPix: pix_code,
+      statusPedido: order_status,
+      valorBoleto: valor_boleto,
+      pixCode: pix_code
     },
-    Customer: payload.Customer,
-    ...payload
+    Customer: {
+      ...Customer,
+      mobile
+    }
   };
   await sendMessage(notification);
 }
 
-// Eventos individuais agora usam sendMessage
-export async function processBoletoEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'boleto_gerado' });
-}
-export async function processPixEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'pix_gerado' });
-}
-export async function processApprovedOrderEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'compra_aprovada' });
-}
-export async function processRefusedOrderEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'compra_recusada' });
-}
-export async function processAbandonedCartEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'carrinho_abandonado' });
-}
-export async function processRefundedOrderEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'compra_reembolsada' });
-}
-export async function processChargebackEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'chargeback' });
-}
-export async function processCanceledSubscriptionEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'subscription_canceled' });
-}
-export async function processLateSubscriptionEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'subscription_late' });
-}
-export async function processRenewedSubscriptionEvent(payload: any) {
-  await handleKiwifyWebhook({ ...payload, webhook_event_type: 'subscription_renewed' });
+export type KiwifyPayload = {
+  webhook_event_type: string;
+  account_id?: string;
+  accountId?: string;
+  Customer?: {
+    first_name?: string;
+    full_name?: string;
+    mobile?: string;
+  };
+  boleto_URL?: string;
+  boleto_barcode?: string;
+  pix_code?: string;
+  order_status?: string;
+  valor_boleto?: string;
+  name?: string;
+  phone?: string;
+};
+
+export async function processKiwifyEvent(payload: KiwifyPayload) {
+  const { webhook_event_type: eventType, boleto_URL, Customer, phone, pix_code } = payload;
+  if (!eventType) throw new Error('Evento não informado.');
+
+  switch (eventType) {
+    case 'boleto_gerado':
+      if (!boleto_URL) throw new Error('URL do boleto obrigatória.');
+      if (!Customer?.mobile && !phone) throw new Error('Telefone obrigatório.');
+      break;
+    case 'pix_gerado':
+      if (!pix_code) throw new Error('Código PIX obrigatório.');
+      break;
+    case 'compra_aprovada':
+    case 'compra_recusada':
+    case 'carrinho_abandonado':
+    case 'compra_reembolsada':
+    case 'chargeback':
+    case 'subscription_canceled':
+    case 'subscription_late':
+    case 'subscription_renewed':
+      break;
+    default:
+      throw new Error('Evento não suportado.');
+  }
+
+  await handleKiwifyWebhook(payload);
 }
 

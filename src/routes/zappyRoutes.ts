@@ -8,8 +8,10 @@ import {
   getNotificationRulesController,
   kiwifyWebhookHandler,
   listConnectionsController,
-  listZappyConnectionsController
+  listZappyConnectionsController,
+  getNotificationRuleByIdController
 } from '../controllers/integrationController';
+import { updateNotificationRuleController } from '../controllers/updateNotificationRuleController';
 import { listZappySectors } from '../services/zappyConnections';
 
 const router = Router();
@@ -22,14 +24,16 @@ router.get('/integrations', listIntegrations);
 
 router.post('/notification-rules', createNotificationRuleController);
 router.get('/notification-rules', getNotificationRulesController);
+router.get('/notification-rules/:id', getNotificationRuleByIdController);
+router.patch('/notification-rules/:id', updateNotificationRuleController);
 
 router.post('/webhook/kiwify', kiwifyWebhookHandler);
-router.get('/connections', listConnectionsController); // Persistidas no banco
-router.get('/connections/active', listZappyConnectionsController); // Ativas via SDK
+router.get('/connections', listConnectionsController);
+router.get('/connections/active', listZappyConnectionsController);
+
 router.get('/queues', async (req, res) => {
-  const { accountId } = req.query;
   try {
-    const queues = await listZappySectors(accountId as string);
+    const queues = await listZappySectors(req.query.accountId as string);
     res.status(200).json(queues);
   } catch (err: any) {
     res.status(500).json({ error: err.message });

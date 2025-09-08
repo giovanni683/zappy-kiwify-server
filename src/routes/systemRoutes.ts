@@ -1,5 +1,12 @@
 import { Router } from 'express';
-import { healthCheck, getStats, getLogs, getLogsFunction, getSupportedEvents, getDynamicVariables } from '../controllers/statusController';
+import {
+  healthCheck,
+  getStats,
+  getLogs,
+  getLogsFunction,
+  getSupportedEvents,
+  getDynamicVariables
+} from '../controllers/statusController';
 
 const router = Router();
 
